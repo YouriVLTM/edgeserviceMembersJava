@@ -1,7 +1,6 @@
-package com.example.demo.controller;
+package com.example.membersedgeservice.controller;
 
-import com.example.demo.model.Comment;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.membersedgeservice.model.Comment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

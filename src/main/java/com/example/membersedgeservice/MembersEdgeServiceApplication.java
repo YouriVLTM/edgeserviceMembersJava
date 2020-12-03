@@ -1,13 +1,13 @@
-package com.example.demo;
+package com.example.membersedgeservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CommentApplication {
+public class MembersEdgeServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CommentApplication.class, args);
+		SpringApplication.run(MembersEdgeServiceApplication.class, args);
 	}
 
 }

@@ -1,12 +1,7 @@
-package com.example.demo.model;
+package com.example.membersedgeservice.model;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.index.HashIndexed;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.apache.commons.codec.digest.DigestUtils;
 import java.util.Date;
@@ -35,17 +30,6 @@ public class Comment {
         this.imageKey = imageKey;
         this.key = DigestUtils.sha256Hex(title + userEmail + new Date(System.currentTimeMillis()));
     }
-
-/* public String getId() {
-        return id;
-    }
-    public void setId(String id) {
-        this.id = id;
-    }*/
-
-   /* public generateKey(){
-
-    }*/
 
     public String getKey() {
         return this.key;
