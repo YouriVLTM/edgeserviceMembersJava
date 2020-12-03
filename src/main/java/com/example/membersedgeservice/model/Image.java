@@ -9,7 +9,7 @@ import java.util.Date;
 public class Image {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private String id;
+    private String ids;
     private String source;
     private String userEmail;
     private String description;
