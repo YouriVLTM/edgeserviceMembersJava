@@ -1,20 +1,18 @@
 package com.example.membersedgeservice.model;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.data.annotation.Id;
-
-import javax.persistence.*;
 import java.util.Date;
 
 public class Image {
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private String ids;
+    private String id;
     private String source;
     private String userEmail;
     private String description;
-    @Column(unique=true)
     private String key;
+
+    public Image(){
+
+    }
 
     public Image(String source, String userEmail, String description) {
         this.source = source;
@@ -36,6 +34,9 @@ public class Image {
         return key;
     }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
 
     public String getUserEmail() {
         return userEmail;
