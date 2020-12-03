@@ -1,15 +1,12 @@
 package com.example.membersedgeservice.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.util.Date;
 
-@Document(collection = "comment")
 public class Comment {
 
-    @Id
     private String id;
     private String title;
     private String description;
@@ -17,11 +14,15 @@ public class Comment {
     private String imageKey;
     private String key;
 
-    @DateTimeFormat(style="yyyyMMdd'T'HHmmss.SSSZ")
+   /* @DateTimeFormat(style="yyyyMMdd'T'HHmmss.SSSZ")
     private java.util.Date createDate;
 
     @DateTimeFormat(style="yyyyMMdd'T'HHmmss.SSSZ")
-    private java.util.Date updateDate;
+    private java.util.Date updateDate;*/
+
+    public Comment(){
+
+    }
 
     public Comment(String title, String description, String userEmail, String imageKey) {
         this.title = title;
@@ -33,6 +34,10 @@ public class Comment {
 
     public String getKey() {
         return this.key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public String getTitle() {
@@ -68,7 +73,7 @@ public class Comment {
         this.imageKey = imageKey;
     }
 
-    public Date getCreateDate() {
+    /*public Date getCreateDate() {
         return createDate;
     }
 
@@ -82,5 +87,5 @@ public class Comment {
 
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
-    }
+    }*/
 }
