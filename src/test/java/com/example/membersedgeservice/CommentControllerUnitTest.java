@@ -49,7 +49,9 @@ public class CommentControllerUnitTest {
             "Comment1",
             "Dat is mooi.",
             "com1@hotmail.com",
-            "123A"
+            "123A",
+            "com123A"
+
     );
 
     private Comment comment2 = new Comment(
@@ -174,4 +176,67 @@ public class CommentControllerUnitTest {
 
     }
 
+    @Test
+    public void whenUpdateComment_thenReturnFilledImageUserCommentJson() throws Exception {
+        Comment newComment1 = new Comment(
+                "Comment1",
+                "Dat is mooi.",
+                "com1@hotmail.com",
+                "123A",
+                "com123A"
+        );
+
+        Comment updateComment1 = new Comment(
+                "upComment1",
+                "upDat is mooi.",
+                "com1@hotmail.com",
+                "123A",
+                "com123A"
+        );
+
+        // GET comment from key
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(newComment1))
+                );
+
+        // PUT comment from key
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                .andExpect(method(HttpMethod.PUT))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(updateComment1))
+                );
+
+        mockMvc.perform(put("/comments")
+                .param("commentKey", updateComment1.getKey())
+                .param("title", updateComment1.getTitle())
+                .param("description", updateComment1.getDescription())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title",is("upComment1")))
+                .andExpect(jsonPath("$.description",is("upDat is mooi.")))
+                .andExpect(jsonPath("$.user.userEmail",is("com1@hotmail.com")))
+                .andExpect(jsonPath("$.image.key",is("123A")));
+
+    }
+
+    @Test
+    public void whenDeleteComment_thenReturnStatusOk() throws Exception {
+
+        // DELETE comment key com123A
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/com123A")))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK)
+                );
+
+        mockMvc.perform(delete("/comments/{key}", "com123A"))
+                .andExpect(status().isOk());
+    }
 }

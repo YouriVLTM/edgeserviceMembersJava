@@ -7,6 +7,7 @@ import com.example.membersedgeservice.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,7 +61,44 @@ public class CommentController {
                 restTemplate.postForObject("http://" + commentServiceBaseUrl + "/comments",
                         new Comment(title,description,userEmail,imageKey),Comment.class);
 
-        return new FilledImageUserComment(user,image,comment);
+        return new FilledImageUserComment(image, user,comment);
     }
 
-}
+    @PutMapping("/comments")
+    public FilledImageUserComment updateComment(@RequestParam String commentKey,
+                                                @RequestParam String title,
+                                                @RequestParam String description) {
+
+        //check if commentKey exist
+        Comment comment = restTemplate.getForObject("http://" + commentServiceBaseUrl + "/comments/" + commentKey,
+                Comment.class);
+
+        // Update comment
+        comment.setTitle(title);
+        comment.setDescription(description);
+        ResponseEntity<Comment> responseEntityReview =
+                restTemplate.exchange("http://" + commentServiceBaseUrl + "/comments",
+                        HttpMethod.PUT, new HttpEntity<>(comment), Comment.class);
+
+        Comment retrievedComment = responseEntityReview.getBody();
+
+        //TODO get user
+        User user = new User();
+
+        //TODO get Images
+        Image image = new Image();
+
+
+        return new FilledImageUserComment(image, user, retrievedComment);
+
+    }
+
+    @DeleteMapping("/comments/{key}")
+    public ResponseEntity deleteComment(@PathVariable String key){
+
+        restTemplate.delete("http://" + commentServiceBaseUrl + "/comments/" + key);
+
+        return ResponseEntity.ok().build();
+    }
+
+    }

@@ -12,7 +12,7 @@ public class FilledImageUserComment {
     public FilledImageUserComment() {
     }
 
-    public FilledImageUserComment(User user,Image image,Comment comment) {
+    public FilledImageUserComment(Image image,User user,Comment comment) {
         this.user = new User(user.getUserEmail());
         this.image = new Image(image.getSource(), image.getUserEmail(), image.getDescription(), image.getKey());
         this.title = comment.getTitle();

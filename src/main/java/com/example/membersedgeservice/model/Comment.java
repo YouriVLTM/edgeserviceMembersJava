@@ -40,6 +40,14 @@ public class Comment {
         this.key = DigestUtils.sha256Hex(title + userEmail + new Date(System.currentTimeMillis()));
     }
 
+    public Comment(String title, String description, String userEmail, String imageKey, String key) {
+        this.title = title;
+        this.description = description;
+        this.userEmail = userEmail;
+        this.imageKey = imageKey;
+        this.key = key;
+    }
+
     public String getKey() {
         return this.key;
     }
