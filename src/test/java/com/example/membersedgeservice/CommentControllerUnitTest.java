@@ -98,6 +98,8 @@ public class CommentControllerUnitTest {
     @Test
     public void whenGetCommentsByImagesKey_thenReturnAllCommentsJson() throws Exception{
 
+
+
         // GET all reviews from User 1
         mockServer.expect(ExpectedCount.once(),
                 requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/images/123A")))
@@ -120,4 +122,56 @@ public class CommentControllerUnitTest {
                 .andExpect(jsonPath("$[1].userEmail",is("com3@hotmail.com")))
                 .andExpect(jsonPath("$[1].imageKey",is("123A")));
     }
+    @Test
+    public void whenAddComment_thenReturnFilledImageUserCommentJson() throws Exception {
+
+        Comment newComment1 = new Comment(
+                "Comment1",
+                "Dat is mooi.",
+                "com1@hotmail.com",
+                "123A"
+        );
+
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(newComment1))
+                );
+
+       /* //TODO get images
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(newComment1))
+                );
+
+
+        //TODO get users
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(newComment1))
+                );*/
+
+        mockMvc.perform(post("/comments")
+                .param("userEmail", newComment1.getUserEmail())
+                .param("imageKey", newComment1.getImageKey())
+                .param("title", newComment1.getTitle())
+                .param("description", newComment1.getDescription())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title",is("Comment1")))
+                .andExpect(jsonPath("$.description",is("Dat is mooi.")))
+                .andExpect(jsonPath("$.user.userEmail",is("com1@hotmail.com")))
+                .andExpect(jsonPath("$.image.key",is("123A")));
+
+    }
+
 }
