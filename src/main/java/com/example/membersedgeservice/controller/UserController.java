@@ -11,20 +11,25 @@ import org.springframework.web.client.RestTemplate;
 
 @RestController
 public class UserController {
-    @Autowired
-    private RestTemplate restTemplate;
+    //@Autowired
+    //private RestTemplate restTemplate;
 
     //@Value("${userservice.baseurl}")
     //private String userServiceBaseUrl;
-
-    @PostMapping(value ="/login")
-    public ImgBoardUser login(@RequestBody Login login){
+/*
+    @PostMapping(value ="/login2")
+    public Boolean login(@RequestBody Login login){
 
         //Make a new comment
         //ImgBoardUser user = restTemplate.postForObject("http://" + userServiceBaseUrl + "/login",
         ImgBoardUser user = restTemplate.postForObject("http://localhost:8051/login",
                         login,ImgBoardUser.class);
-        System.out.println("email user :" + user.getEmail());
-        return user;
-    }
+        if(user!=null){
+            return true;
+        }else{
+            return false;
+        }
+        //System.out.println("email user :" + user.getEmail());
+        //return user;
+    }*/
 }
