@@ -1,0 +1,32 @@
+https://learnk8s.io/blog/scaling-spring-boot-microservices
+
+minikube start \
+  --memory 8096 \
+  --extra-config=controller-manager.horizontal-pod-autoscaler-upscale-delay=1m \
+  --extra-config=controller-manager.horizontal-pod-autoscaler-downscale-delay=2m \
+  --extra-config=controller-manager.horizontal-pod-autoscaler-sync-period=10s
+
+minikube docker-env
+
+kubectl create -f activemq-deployment.yaml
+kubectl create -f deploy-comment.yaml
+
+cd monitoring/
+kubectl create -f ./metrics-server
+kubectl create -f ./namespaces.yaml
+kubectl create -f ./prometheus
+kubectl create -f ./custom-metrics-api
+
+
+kubectl create -f hpa.yaml
+
+
+//Voor metrics te bekijken via postman:
+{{minikubeIP}}:{{commentsPort}}/metrics
+// Voor message toe te voegen (100) via postman:
+{{minikubeIP}}:{{commentsPort}}/submit
+
+--> dan zou je normaal de pods moeten autoscalen!
+
+//Hier kan je kijken of hij een error geeft
+kubectl describe hpa
