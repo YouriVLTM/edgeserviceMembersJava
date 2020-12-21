@@ -1,8 +1,11 @@
 package com.example.membersedgeservice;
 
+import com.example.membersedgeservice.config.JwtTokenUtil;
 import com.example.membersedgeservice.model.Comment;
 import com.example.membersedgeservice.model.Image;
+import com.example.membersedgeservice.model.ImgBoardUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +15,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,11 +41,18 @@ public class CommentControllerUnitTest {
     @Value("${commentservice.baseurl}")
     private String commentServiceBaseUrl;
 
+    @Value("${userservice.baseurl}")
+    private String userServiceBaseUrl;
+
     @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
     private MockMvc mockMvc;
+
+    //login AUTHENTICATION
+    private String token;
+    ImgBoardUser user;
 
     private MockRestServiceServer mockServer;
     private ObjectMapper mapper = new ObjectMapper();
@@ -87,7 +99,7 @@ public class CommentControllerUnitTest {
 
 
     @BeforeEach
-    public void initializeMockserver() {
+    public void initializeMockserver() throws Exception{
         mockServer = MockRestServiceServer.createServer(restTemplate);
 
         /*Set Images keys*/
@@ -95,12 +107,31 @@ public class CommentControllerUnitTest {
         image2.setKey("123B");
         image3.setKey("123C");
         image4.setKey("123D");
+
+        //login AUTHENTICATION
+        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+        user = new ImgBoardUser(
+                "testF",
+                "testL",
+                "test@hotmail.com",
+                "test2"
+        );
+        token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                new ArrayList<>()));
+
+        mockServer.expect(ExpectedCount.manyTimes(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+
     }
 
     @Test
     public void whenGetCommentsByImagesKey_thenReturnAllCommentsJson() throws Exception{
-
-
 
         // GET all reviews from User 1
         mockServer.expect(ExpectedCount.once(),
@@ -111,7 +142,7 @@ public class CommentControllerUnitTest {
                         .body(mapper.writeValueAsString(allcommentFromImage123A))
                 );
 
-        mockMvc.perform(get("/comments/images/{imagekey}", "123A"))
+        mockMvc.perform(get("/comments/images/{imagekey}", "123A").header("Authorization", "Bearer " + token))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -161,7 +192,7 @@ public class CommentControllerUnitTest {
                         .body(mapper.writeValueAsString(newComment1))
                 );*/
 
-        mockMvc.perform(post("/comments")
+        mockMvc.perform(post("/comments").header("Authorization", "Bearer " + token)
                 .param("userEmail", newComment1.getUserEmail())
                 .param("imageKey", newComment1.getImageKey())
                 .param("title", newComment1.getTitle())
@@ -212,7 +243,7 @@ public class CommentControllerUnitTest {
                         .body(mapper.writeValueAsString(updateComment1))
                 );
 
-        mockMvc.perform(put("/comments")
+        mockMvc.perform(put("/comments").header("Authorization", "Bearer " + token)
                 .param("commentKey", updateComment1.getKey())
                 .param("title", updateComment1.getTitle())
                 .param("description", updateComment1.getDescription())
@@ -236,7 +267,7 @@ public class CommentControllerUnitTest {
                 .andRespond(withStatus(HttpStatus.OK)
                 );
 
-        mockMvc.perform(delete("/comments/{key}", "com123A"))
+        mockMvc.perform(delete("/comments/{key}", "com123A").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 }
