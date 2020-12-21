@@ -29,7 +29,7 @@ public class CommentController {
     @GetMapping("/comments/images/{imagekey}")
     public List<Comment> getRankingsByUserId(@PathVariable String imagekey){
 
-        //DOTO check if imageKEY exist
+        //TODO check if imageKEY exist
 
 
         // GET COMMENTS FROM IMAGE LIST
