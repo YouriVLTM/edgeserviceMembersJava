@@ -1,10 +1,6 @@
 https://learnk8s.io/blog/scaling-spring-boot-microservices
 
-minikube start \
-  --memory 8096 \
-  --extra-config=controller-manager.horizontal-pod-autoscaler-upscale-delay=1m \
-  --extra-config=controller-manager.horizontal-pod-autoscaler-downscale-delay=2m \
-  --extra-config=controller-manager.horizontal-pod-autoscaler-sync-period=10s
+minikube start --extra-config=controller-manager.horizontal-pod-autoscaler-upscale-delay=1m --extra-config=controller-manager.horizontal-pod-autoscaler-downscale-delay=2m --extra-config=controller-manager.horizontal-pod-autoscaler-sync-period=10s
 
 minikube docker-env
 
@@ -16,6 +12,13 @@ kubectl create -f ./metrics-server
 kubectl create -f ./namespaces.yaml
 kubectl create -f ./prometheus
 kubectl create -f ./custom-metrics-api
+
+
+kubectl apply -f ./metrics-server
+kubectl apply -f ./namespaces.yaml
+kubectl apply -f ./prometheus
+kubectl apply -f ./custom-metrics-api
+
 
 
 kubectl create -f hpa.yaml
