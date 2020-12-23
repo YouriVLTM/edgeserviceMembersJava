@@ -44,6 +44,8 @@ metadata:
   name: comment-service-server # Name of the service
   labels: # Labels that will be applied to this service
     app: comment-service-server
+  annotations:
+    dev.okteto.com/auto-ingress: "true" #only for okteto kube for SSL line
 spec:
   type: NodePort # The service will be exposed by opening a Port on each node and proxying it. Allowing connections from outside the cluster
   selector:
