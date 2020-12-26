@@ -12,23 +12,64 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
-public class LikeController {
+public class ImageLikeController {
     @Autowired
     private RestTemplate restTemplate;
 
     @Value("${likeservice.baseurl}")
     private String likeServiceBaseUrl;
 
-    @GetMapping("/likes/images/{key}")
-    public List<ImageLike> getLikesByImageId(@PathVariable String key){
+    @GetMapping("/likes/image/{imageKey}")
+    public List<ImageLike> getLikesByImageKey(@PathVariable String imageKey){
 
         // does image exist?
 
         // get likes by image
         ResponseEntity<List<ImageLike>> responseEntityReviews =
-                restTemplate.exchange("http://" + likeServiceBaseUrl + "/likes/images/{key}",
+                restTemplate.exchange("http://" + likeServiceBaseUrl + "/likes/image/{imageKey}",
                         HttpMethod.GET, null, new ParameterizedTypeReference<List<ImageLike>>() {
-                        }, key);
+                        }, imageKey);
+
+        return responseEntityReviews.getBody();
+    }
+    @GetMapping("/likes/user/{userEmail}")
+    public List<ImageLike> getlikesByUserEmail(@PathVariable String userEmail){
+
+        // does image exist?
+
+        // get likes by user
+        ResponseEntity<List<ImageLike>> responseEntityReviews =
+                restTemplate.exchange("http://" + likeServiceBaseUrl + "/likes/user/{userEmail}",
+                        HttpMethod.GET, null, new ParameterizedTypeReference<List<ImageLike>>() {
+                        }, userEmail);
+
+        return responseEntityReviews.getBody();
+    }
+
+    @GetMapping("/likes/image/{imageKey}/state/{state}")
+    public List<ImageLike> getLikesByImageKeyAndState(@PathVariable String imageKey, @PathVariable boolean state){
+
+        // does image exist?
+
+        // get likes by image and state
+        ResponseEntity<List<ImageLike>> responseEntityReviews =
+                restTemplate.exchange("http://" + likeServiceBaseUrl + "/likes/image/{imageKey}/state/{state}",
+                        HttpMethod.GET, null, new ParameterizedTypeReference<List<ImageLike>>() {
+                        }, imageKey, state);
+
+        return responseEntityReviews.getBody();
+    }
+
+    @GetMapping("/likes/image/{imageKey}/user/{userEmail}")
+    public ImageLike getLikeByImageKeyAndUserEmail(@PathVariable String imageKey, @PathVariable String userEmail){
+
+        // does image exist?
+
+        // get like by image and user
+        ResponseEntity<ImageLike> responseEntityReviews =
+                restTemplate.exchange("http://" + likeServiceBaseUrl + "/likes/image/{imageKey}/user/{userEmail}",
+                        HttpMethod.GET, null, new ParameterizedTypeReference<ImageLike>() {
+                        }, imageKey, userEmail);
 
         return responseEntityReviews.getBody();
     }
