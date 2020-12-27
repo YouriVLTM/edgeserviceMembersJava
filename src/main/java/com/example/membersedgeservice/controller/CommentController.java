@@ -1,16 +1,15 @@
 package com.example.membersedgeservice.controller;
 
-import com.example.membersedgeservice.model.Comment;
-import com.example.membersedgeservice.model.FilledImageUserComment;
-import com.example.membersedgeservice.model.Image;
-import com.example.membersedgeservice.model.User;
+import com.example.membersedgeservice.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -25,6 +24,9 @@ public class CommentController {
 
     @Value("${commentservice.baseurl}")
     private String commentServiceBaseUrl;
+
+    @Value("${userservice.baseurl}")
+    private String userServiceBaseUrl;
 
     @GetMapping("/comments/images/{imagekey}")
     public List<Comment> getRankingsByUserId(@PathVariable String imagekey){
@@ -42,13 +44,19 @@ public class CommentController {
     }
 
     @PostMapping("/comments")
-    public FilledImageUserComment addComment(@RequestParam String userEmail,
+    public ResponseEntity<FilledImageUserComment> addComment(@RequestParam String userEmail,
                                              @RequestParam String imageKey,
                                              @RequestParam String title,
-                                             @RequestParam String description){
+                                             @RequestParam String description) throws Exception {
 
         //TODO check if Userkey exist
-        User user = new User(userEmail);
+        ImgBoardUser user = restTemplate.getForObject("http://" + userServiceBaseUrl + "/user/" + userEmail,
+                ImgBoardUser.class);
+        if(user == null){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User note found");
+        }
+//        User user = new User(userEmail);
+
 
 
         //TODO check if imageKey exist
@@ -59,9 +67,13 @@ public class CommentController {
         //Make a new comment
         Comment comment =
                 restTemplate.postForObject("http://" + commentServiceBaseUrl + "/comments",
-                        new Comment(title,description,userEmail,imageKey),Comment.class);
+                        new Comment(title,
+                                description,
+                                userEmail,
+                                imageKey
+                        ),Comment.class);
 
-        return new FilledImageUserComment(image, user,comment);
+        return new ResponseEntity<FilledImageUserComment>(new FilledImageUserComment(image, user,comment), HttpStatus.OK);
     }
 
     @PutMapping("/comments")
@@ -83,7 +95,7 @@ public class CommentController {
         Comment retrievedComment = responseEntityReview.getBody();
 
         //TODO get user
-        User user = new User();
+        ImgBoardUser user = new ImgBoardUser();
 
         //TODO get Images
         Image image = new Image();

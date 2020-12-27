@@ -26,7 +26,7 @@ public class UserController {
 
         //Make a new comment
         //ImgBoardUser user = restTemplate.postForObject("http://" + userServiceBaseUrl + "/login",
-        ImgBoardUser user = restTemplate.postForObject("http://localhost:8051/user",
+        ImgBoardUser user = restTemplate.postForObject("http://"+ userServiceBaseUrl + "/user",
                 userRequest,ImgBoardUser.class);
         return user;
         //System.out.println("email user :" + user.getEmail());
