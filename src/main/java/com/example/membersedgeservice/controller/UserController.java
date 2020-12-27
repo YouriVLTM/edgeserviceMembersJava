@@ -21,7 +21,15 @@ public class UserController {
     @Value("${userservice.baseurl}")
     private String userServiceBaseUrl;
 
-    @PostMapping(value ="/user")
+    @GetMapping("/user/{email}")
+    public ImgBoardUser getUser(@PathVariable String email,@RequestHeader(name="Authorization") String token) {
+        ImgBoardUser user = restTemplate.getForObject("http://"+userServiceBaseUrl+" /user/"+email, ImgBoardUser.class);
+        user.setPassword(null);
+        return user;
+    }
+
+
+        @PostMapping(value ="/user")
     public ImgBoardUser register(@RequestBody ImgBoardUser userRequest){
 
         //Make a new comment
