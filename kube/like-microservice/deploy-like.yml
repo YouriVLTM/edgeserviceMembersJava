@@ -9,39 +9,51 @@ spec:
     - port: 3306
   selector:                       # Selects any Pod with labels `app=comment-service,tier=mongo`
     app: like-service
-    tier: MySQL
-  clusterIP: None
+    tier: mysql
 ---
 apiVersion: apps/v1
 kind: Deployment                    # Type of the kubernetes resource
 metadata:
-  name: like-service-MySQL-deployment           # Name of the deployment
+  name: like-service-mysql-deployment           # Name of the deployment
   labels:                           # Labels applied to this deployment
     app: like-service
 spec:
   selector:
-    matchLabels:                    # This deployment applies to the Pods matching the specified labels
+    matchLabels:                   # This deployment applies to the Pods matching the specified labels
       app: like-service
-      tier: MySQL
+      tier: mysql
   strategy:
     type: Recreate
   template:                         # Template for the Pods in this deployment
     metadata:
       labels:                       # Labels to be applied to the Pods in this deployment
         app: like-service
-        tier: MySQL
+        tier: mysql
     spec:                           # The spec for the containers that will be run inside the Pods in this deployment
       containers:
-        - image: MySQL                # The container image
-          name: MySQL
+        - image: mysql                # The container image
+          name: mysql
           ports:
             - containerPort: 3306        # The port that the container exposes
-              name: MySQL
+              name: mysql
+          env:                    # Environment variables supplied to the Pod
+            - name: MYSQL_DB_HOST
+              value: "like-service-mysql"
+            - name: MYSQL_DB_USER
+              value: mysql123
+            - name: MYSQL_DB_PASSWORD
+              value: mysql123
+            - name: MYSQL_ROOT_PASSWORD
+              value: abc123
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: SERVER_PORT
+              value: "8054"
 ---
 apiVersion: v1                   # API version
 kind: Service                    # Type of the kubernetes resource
 metadata:
-  name: lik-service-server    # Name of the service
+  name: like-service-server    # Name of the service
   labels:                        # Labels that will be applied to this service
     app: like-service-server
 spec:
@@ -52,6 +64,7 @@ spec:
     - name: http
       port: 8054
       targetPort: 8054
+ 
 ---
 apiVersion: apps/v1           # API version
 kind: Deployment              # Type of kubernetes resource
@@ -76,20 +89,19 @@ spec:
           ports:
             - name: http
               containerPort: 8054 # The port that the container exposes
-          readinessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            httpGet:
-              path: /health
-              port: 8053
           resources:
             limits:
-
               cpu: 0.2
               memory: "200Mi"
           env:                    # Environment variables supplied to the Pod
             - name: MYSQL_DB_HOST
-              value: "like-service-mongo"
+              value: "like-service-mysql"
+            - name: MYSQL_DB_USER
+              value: mysql123
+            - name: MYSQL_DB_PASSWORD
+              value: mysql123
+            - name: MYSQL_ROOT_PASSWORD
+              value: abc123
             - name: MYSQL_PORT
               value: "3306"
             - name: SERVER_PORT
