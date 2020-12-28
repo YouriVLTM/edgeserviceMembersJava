@@ -7,6 +7,7 @@ import com.example.membersedgeservice.model.JwtRequest;
 import com.example.membersedgeservice.model.Login;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,6 +122,41 @@ public class UserControllerUnitTest {
         assertFalse(token.isEmpty());
     }
     @Test
+    public void whengetUser_thenReturnuser() throws Exception {
+        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test");
+        String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                new ArrayList<>()));
+        mockServer.expect(ExpectedCount.twice(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+        user.setPassword(null);
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+        mockMvc.perform(get("/user/"+user.getEmail()).header("Authorization", "Bearer " + token)
+                .content(mapper.writeValueAsString(user))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname",is("Robin")))
+                .andExpect(jsonPath("$.lastname",is("Vranckx")))
+                .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
+                .andExpect(jsonPath("$.password",is(IsNull.nullValue())));
+
+
+    }
+    @Test
     public void whenUpdatePassword_thenReturnUser() throws Exception {
         JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
         ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
@@ -157,6 +193,46 @@ public class UserControllerUnitTest {
 
     }
     @Test
+    public void whenUpdatePasswordFromOtherUSer_thenReturnNull() throws Exception {
+        ImgBoardUser user1 = new ImgBoardUser(
+                "testF",
+                "testL",
+                "test@hotmail.com",
+                "test"
+        );
+        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
+        //whenLogin_thenReturnToken();
+        String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                new ArrayList<>()));
+
+        mockServer.expect(ExpectedCount.manyTimes(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user")))
+                .andExpect(method(HttpMethod.PUT))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+
+        MvcResult result=mockMvc.perform(put("/user").header("Authorization", "Bearer " + token)
+                .content(mapper.writeValueAsString(user1))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        String response = result.getResponse().getContentAsString();
+        assertTrue(response.equals(""));
+
+    }
+    @Test
     public void whenDeleteUser_thenReturnStatus() throws Exception {
         JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
         ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
@@ -179,6 +255,37 @@ public class UserControllerUnitTest {
 
         mockMvc.perform(delete("/user/"+user.getEmail()).header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+
+    }
+    @Test
+    public void whenDeleteUserFromOtherUSer_thenReturn403() throws Exception {
+        ImgBoardUser user1 = new ImgBoardUser(
+                "testF",
+                "testL",
+                "test@hotmail.com",
+                "test"
+        );
+        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
+        //whenLogin_thenReturnToken();
+        String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                new ArrayList<>()));
+        mockServer.expect(ExpectedCount.manyTimes(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+        mockServer.expect(ExpectedCount.manyTimes(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user1.getEmail())))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.resolve(403)));
+
+
+        mockMvc.perform(delete("/user/"+user1.getEmail()).header("Authorization", "Bearer " + token))
+                .andExpect(status().is(403));
 
     }
 }
