@@ -5,6 +5,7 @@ import com.example.membersedgeservice.model.ImgBoardUser;
 import com.example.membersedgeservice.model.JwtRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.client.ExpectedCount;
@@ -50,17 +52,51 @@ public class UserControllerIntigrationTest {
         private String token;
 
         private ObjectMapper mapper = new ObjectMapper();
+        @BeforeEach
+        public void beforeAllTests() {
+            ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test") ;
+            ImgBoardUser user1 = new ImgBoardUser("testF","testL","test@hotmail.com","test");
+            try{
+                ResponseEntity response = restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user.getEmail(), HttpMethod.DELETE,null,
+                        String.class);
+            } catch (Exception e) {
+            }
+            try{
 
+            ResponseEntity response2 =restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user1.getEmail(), HttpMethod.DELETE,null,
+                    String.class);
+            } catch (Exception e) {
+            }
+            user =restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
+                    user,ImgBoardUser.class);
+            user1 =restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
+                    user1,ImgBoardUser.class);
+        }
+        @AfterEach
+        public void afterAllTests() {
+            //Watch out with deleteAll() methods when you have other data in the test database!
+            ImgBoardUser user2 = new ImgBoardUser(
+                    "testF2",
+                    "testL2",
+                    "test2@hotmail.com",
+                    "test2"
+            );
+            try{
+                ResponseEntity response = restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user2.getEmail(), HttpMethod.DELETE,null,
+                        String.class);
+            }catch(Exception e){
+            }
+        }
 
         @Test
         public void whenRegister_thenReturnUser() throws Exception {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
             ImgBoardUser user1 = new ImgBoardUser(
-                    "testF",
-                    "testL",
-                    "test@hotmail.com",
-                    "test"
+                    "testF2",
+                    "testL2",
+                    "test2@hotmail.com",
+                    "test2"
             );
 
             MvcResult result = mockMvc.perform(post("/user")
@@ -68,13 +104,13 @@ public class UserControllerIntigrationTest {
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.firstname",is("testF")))
-                    .andExpect(jsonPath("$.lastname",is("testL")))
-                    .andExpect(jsonPath("$.email",is("test@hotmail.com")))
+                    .andExpect(jsonPath("$.firstname",is("testF2")))
+                    .andExpect(jsonPath("$.lastname",is("testL2")))
+                    .andExpect(jsonPath("$.email",is("test2@hotmail.com")))
                     .andReturn();
             String response = result.getResponse().getContentAsString();
             String encryptedPassword = JsonPath.parse(response).read("$.password").toString();
-            assertTrue(encoder.matches("test",encryptedPassword ));
+            assertTrue(encoder.matches("test2",encryptedPassword ));
 
         }
         @Test
@@ -97,6 +133,19 @@ public class UserControllerIntigrationTest {
             String response = result.getResponse().getContentAsString();
             token = JsonPath.parse(response).read("$.token").toString();
             assertFalse(token.isEmpty());
+        }
+        @Test
+         public void whengetUser_thenReturnuser() throws Exception {
+            JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+            ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
+            //whenLogin_thenReturnToken();
+            String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                    new ArrayList<>()));
+
+
+            mockMvc.perform(delete("/user/"+user.getEmail()).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk());
+
         }
         @Test
         public void whenUpdatePassword_thenReturnUser() throws Exception {
@@ -126,6 +175,31 @@ public class UserControllerIntigrationTest {
             String encryptedPassword = JsonPath.parse(response).read("$.password").toString();
             assertTrue(encoder.matches("test2",encryptedPassword ));
         }
+    @Test
+    public void whenUpdatePasswordFromOtherUSer_thenReturnNull() throws Exception {
+        ImgBoardUser user1 = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test") ;
+
+        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+        ImgBoardUser user = new ImgBoardUser(
+                "testF",
+                "testL",
+                "test@hotmail.com",
+                "test2"
+        );                 //whenLogin_thenReturnToken();
+        String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                new ArrayList<>()));
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+
+
+        MvcResult result=mockMvc.perform(put("/user").header("Authorization", "Bearer " + token)
+                .content(mapper.writeValueAsString(user1))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        String response = result.getResponse().getContentAsString();
+        assertTrue(response.equals(""));
+    }
         @Test
         public void whenDeleteUser_thenReturnStatus() throws Exception {
             JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
@@ -143,4 +217,22 @@ public class UserControllerIntigrationTest {
                     .andExpect(status().isOk());
 
         }
+    @Test
+    public void whenDeleteUserFromOtherUSer_thenReturn403() throws Exception {
+        ImgBoardUser user1 = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test") ;
+        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+        ImgBoardUser user = new ImgBoardUser(
+                "testF",
+                "testL",
+                "test@hotmail.com",
+                "test"
+        );            //whenLogin_thenReturnToken();
+        String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                new ArrayList<>()));
+
+
+        mockMvc.perform(delete("/user/"+user1.getEmail()).header("Authorization", "Bearer " + token))
+                .andExpect(status().is(403));
+
+    }
 }
