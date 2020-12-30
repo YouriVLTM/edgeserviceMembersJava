@@ -1,5 +1,9 @@
 package com.example.membersedgeservice.model;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
+import java.util.Date;
+
 public class FilledImageUserLike {
     private User user;
     private Image image;
