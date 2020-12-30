@@ -49,19 +49,21 @@ public class CommentController {
                                              @RequestParam String title,
                                              @RequestParam String description) throws Exception {
 
-        //TODO check if Userkey exist
+        //check if useremail exist
         ImgBoardUser user = restTemplate.getForObject("http://" + userServiceBaseUrl + "/user/" + userEmail,
                 ImgBoardUser.class);
         if(user == null){
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User note found");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User not found");
         }
-//        User user = new User(userEmail);
 
 
 
         //TODO check if imageKey exist
         Image image = new Image();
         image.setKey(imageKey);
+        if(image == null){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Image not found");
+        }
 
 
         //Make a new comment
