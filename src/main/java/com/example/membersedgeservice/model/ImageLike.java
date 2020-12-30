@@ -37,8 +37,8 @@ public class ImageLike {
         return this.likeKey;
     }
 
-    public void setLikeKey(String key) {
-        this.likeKey = key;
+    public void setLikeKey(String likeKey) {
+        this.likeKey = likeKey;
     }
 
     public int getId() {

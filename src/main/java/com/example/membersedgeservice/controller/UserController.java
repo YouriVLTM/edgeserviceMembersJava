@@ -3,6 +3,7 @@ package com.example.membersedgeservice.controller;
 import com.example.membersedgeservice.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.membersedgeservice.config.JwtTokenUtil;
+
+import java.util.List;
+
 @RestController
 public class UserController {
+    @Autowired private ImageLikeController controllerImageLike;
+    @Autowired private ImageController imageController;
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -63,9 +70,21 @@ public class UserController {
         String jwtToken = token.substring(7);
         String emailToken = jwtTokenUtil.getUsernameFromToken(jwtToken);
         if(emailToken.equalsIgnoreCase(email)){
-            //TODO delete evryting from user
+            //TODO delete evryting from comment
+            List<ImageLike> imagesLikesUser=controllerImageLike.getlikesByUserEmail(email);
+            if(imagesLikesUser !=null) {
+                for (int i = 0; i < imagesLikesUser.size(); i++) {
+                    controllerImageLike.deleteLike(imagesLikesUser.get(i).getLikeKey());
+                }
+            }
 
+            List<Image> images=imageController.getImagesByUserEmail(email);
+            if(images !=null){
 
+            for(int i=0;i<images.size();i++){
+                imageController.deleteImage(images.get(i).getKey());
+            }
+            }
 
             ResponseEntity response =restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+email, HttpMethod.DELETE,null,
                     String.class);
