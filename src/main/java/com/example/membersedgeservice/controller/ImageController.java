@@ -63,9 +63,16 @@ public class ImageController {
     }
 
     @PutMapping("/images")
-    public Image updateImage(@RequestBody Image updatedImage) {
+    public Image updateImage(@RequestParam String source, @RequestParam String userEmail, @RequestParam String description, @RequestParam String key) {
+
+        //check if likeKey exist
+        Image updatedImage= new Image();
 
         // Update like
+        updatedImage.setDescription(description);
+        updatedImage.setSource(source);
+        updatedImage.setUserEmail(userEmail);
+        updatedImage.setKey(key);
         ResponseEntity<Image> responseEntityReview =
                 restTemplate.exchange("http://" + imageServiceBaseurl + "/images",
                         HttpMethod.PUT, new HttpEntity<>(updatedImage), Image.class);
