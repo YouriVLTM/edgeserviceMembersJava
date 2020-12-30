@@ -59,10 +59,10 @@ public class ImageControllerIntigrationTest {
 
 
     /*IMAGES*/
-    private Image image1 = new Image("AB.png","gust@gmail.com","hond");
-    private Image image2 = new Image("ABC.png","you@gmail.com","kat");
-    private Image image3 = new Image("ABCD.png","me@gmail.com","konijn");
-    private Image image4 = new Image("ABCDE.png","you@gmail.com","vis");
+    private Image image1 = new Image("AB.png","gust@gmail.com","hond","ABC123");
+    private Image image2 = new Image("ABC.png","you@gmail.com","kat","ABC1234");
+    private Image image3 = new Image("ABCD.png","me@gmail.com","konijn","ABC1235");
+    private Image image4 = new Image("ABCDE.png","you@gmail.com","vis","ABC1236");
 
     private List<Image> allImageFromEmailYou = Arrays.asList(image2, image4);
 
@@ -165,40 +165,47 @@ public class ImageControllerIntigrationTest {
                 .andExpect(jsonPath("$.userEmail",is("post@gmail.com")));
 
     }
-//    @Test
-//    public void whenUpdateImage_thenReturnImageJson() throws Exception {
-//        Image newImage = new Image("test.png","test@gmail.com","test", "ABC123");
-//
-//        Image updateImage = new Image("uptest.png","uptest@gmail.com","uptest", "ABC123");
-//
-//        // GET comment from key
-//        mockServer.expect(ExpectedCount.once(),
-//                requestTo(new URI("http://" + imageServiceBaseurl + "/images")))
-//                .andExpect(method(HttpMethod.GET))
-//                .andRespond(withStatus(HttpStatus.OK)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(mapper.writeValueAsString(newImage))
-//                );
-//
-//        // PUT comment from key
-//        mockServer.expect(ExpectedCount.once(),
-//                requestTo(new URI("http://" + imageServiceBaseurl + "/images")))
-//                .andExpect(method(HttpMethod.PUT))
-//                .andRespond(withStatus(HttpStatus.OK)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(mapper.writeValueAsString(updateImage))
-//                );
-//
-//        mockMvc.perform(put("/images").header("Authorization", "Bearer " + token)
-//                .param("source", updateImage.getSource())
-//                .param("userEmail", updateImage.getUserEmail())
-//                .param("description", updateImage.getDescription())
-//                .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.title",is("uptest.png")))
-//                .andExpect(jsonPath("$.description",is("uptest")))
-//                .andExpect(jsonPath("$.userEmail",is("uptest@gmail.com")));
-//
-//    }
+    @Test
+    public void whenUpdateImage_thenReturnImageJson() throws Exception {
+        Image newImage = new Image("test.png","test@gmail.com","test", "ABC123");
+
+        Image updateImage = new Image("uptest.png","uptest@gmail.com","uptest", "ABC123");
+
+
+
+        // PUT comment from key
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images")))
+                .andExpect(method(HttpMethod.PUT))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(updateImage))
+                );
+
+        mockMvc.perform(put("/images").header("Authorization", "Bearer " + token)
+                .param("source", updateImage.getSource())
+                .param("userEmail", updateImage.getUserEmail())
+                .param("description", updateImage.getDescription())
+                .param("key", updateImage.getKey())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.source",is("uptest.png")))
+                .andExpect(jsonPath("$.description",is("uptest")))
+                .andExpect(jsonPath("$.userEmail",is("uptest@gmail.com")));
+
+    }
+    @Test
+    public void whenDeleteImage_thenReturnStatusOk() throws Exception {
+
+        // DELETE comment key com123A
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/ABC123")))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK)
+                );
+
+        mockMvc.perform(delete("/images/{key}", "ABC123").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
 }
