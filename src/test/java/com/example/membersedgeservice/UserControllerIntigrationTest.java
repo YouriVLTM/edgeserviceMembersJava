@@ -1,6 +1,8 @@
 package com.example.membersedgeservice;
 
 import com.example.membersedgeservice.config.JwtTokenUtil;
+import com.example.membersedgeservice.model.Image;
+import com.example.membersedgeservice.model.ImageLike;
 import com.example.membersedgeservice.model.ImgBoardUser;
 import com.example.membersedgeservice.model.JwtRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
@@ -42,7 +45,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerIntigrationTest {
         @Value("${userservice.baseurl}")
         private String userServiceBaseUrl;
-
+    @Value("${imageservice.baseurl}")
+    private String imageServiceBaseurl;
+    @Value("${likeservice.baseurl}")
+    private String likeServiceBaseUrl;
         @Autowired
         private RestTemplate restTemplate;
 
@@ -51,12 +57,15 @@ public class UserControllerIntigrationTest {
 
 
         private String token;
+        private ImageLike like1 = new ImageLike(true, "r0703028@student.thomasmore.be", "1");
+        private Image image1= new Image("testSource", "r0703028@student.thomasmore.be", "test");
 
         private ObjectMapper mapper = new ObjectMapper();
         @BeforeEach
         public void beforeAllTests() {
             ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test") ;
             ImgBoardUser user1 = new ImgBoardUser("testF","testL","test@hotmail.com","test");
+
             try{
                 ResponseEntity response = restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user.getEmail(), HttpMethod.DELETE,null,
                         String.class);
@@ -68,10 +77,27 @@ public class UserControllerIntigrationTest {
                     String.class);
             } catch (Exception e) {
             }
+            try{
+                restTemplate.delete("http://" + imageServiceBaseurl + "/images/" + image1.getKey());
+
+            } catch (Exception e) {
+            }
+            try{
+                restTemplate.delete("http://" + likeServiceBaseUrl + "/likes/" + like1.getLikeKey());
+
+            } catch (Exception e) {
+            }
+            try{
             user =restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
                     user,ImgBoardUser.class);
+            } catch (Exception e) {
+            }
+            try{
             user1 =restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
                     user1,ImgBoardUser.class);
+            } catch (Exception e) {
+            }
+
         }
         @AfterEach
         public void afterAllTests() {
@@ -85,6 +111,14 @@ public class UserControllerIntigrationTest {
             try{
                 ResponseEntity response = restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user2.getEmail(), HttpMethod.DELETE,null,
                         String.class);
+            }catch(Exception e){
+            }
+            try{
+                restTemplate.delete("http://" + imageServiceBaseurl + "/images/" + image1.getKey());
+                       }catch(Exception e){
+    }
+            try{
+                restTemplate.delete("http://" + likeServiceBaseUrl + "/likes/" + like1.getLikeKey());
             }catch(Exception e){
             }
         }
@@ -224,6 +258,33 @@ public class UserControllerIntigrationTest {
                     .andExpect(status().isOk());
 
         }
+    @Test
+    public void whenDeleteUser_thendeleteEverythingAndReturnStatus() throws Exception {
+        try{
+            image1 = restTemplate.postForObject("http://" + imageServiceBaseurl + "/images",
+                    image1,Image.class);
+        } catch (Exception e) {
+        }
+        try{
+            like1 = restTemplate.postForObject("http://" + likeServiceBaseUrl + "/likes",
+                    like1,ImageLike.class);
+        } catch (Exception e) {
+        }
+
+        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+        ImgBoardUser user = new ImgBoardUser(
+                "testF",
+                "testL",
+                "test@hotmail.com",
+                "test"
+        );            //whenLogin_thenReturnToken();
+        String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                new ArrayList<>()));
+
+        mockMvc.perform(delete("/user/"+user.getEmail()).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+    }
     @Test
     public void whenDeleteUserFromOtherUSer_thenReturn403() throws Exception {
         ImgBoardUser user1 = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test") ;
