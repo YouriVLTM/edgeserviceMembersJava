@@ -254,7 +254,7 @@ public class UserControllerUnitTest {
                         .contentType(MediaType.APPLICATION_JSON)
                 );
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+user.getEmail())))
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/user/"+user.getEmail())))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -300,19 +300,19 @@ public class UserControllerUnitTest {
                         .body(mapper.writeValueAsString(likesList))
                 );
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/"+null)))//like1.getLikeKey()
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/"+like1.getLikeKey())))//
                 .andExpect(method(HttpMethod.DELETE))
                 .andRespond(withStatus(HttpStatus.OK));
 
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+user.getEmail())))
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/user/"+user.getEmail())))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(mapper.writeValueAsString(imageList))
                 );
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+like1.getLikeKey())))
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+image1.getKey())))
                 .andExpect(method(HttpMethod.DELETE))
                 .andRespond(withStatus(HttpStatus.OK));
 
