@@ -254,7 +254,7 @@ public class UserControllerUnitTest {
                         .contentType(MediaType.APPLICATION_JSON)
                 );
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+user.getEmail())))
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/user/"+user.getEmail())))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -305,7 +305,7 @@ public class UserControllerUnitTest {
                 .andRespond(withStatus(HttpStatus.OK));
 
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+user.getEmail())))
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/user/"+user.getEmail())))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
