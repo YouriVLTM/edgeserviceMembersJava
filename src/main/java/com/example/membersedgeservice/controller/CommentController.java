@@ -28,10 +28,17 @@ public class CommentController {
     @Value("${userservice.baseurl}")
     private String userServiceBaseUrl;
 
+    @Value("${imageservice.baseurl}")
+    private String imageServiceBaseUrl;
+
+
+    //TODO get Comments/useremail
+
     @GetMapping("/comments/images/{imagekey}")
     public List<Comment> getRankingsByUserId(@PathVariable String imagekey){
 
         //TODO check if imageKEY exist
+
 
 
         // GET COMMENTS FROM IMAGE LIST
@@ -59,7 +66,8 @@ public class CommentController {
 
 
         //TODO check if imageKey exist
-        Image image = new Image();
+        Image image = restTemplate.getForObject("http://" + imageServiceBaseUrl + "/images/" + imageKey,
+                Image.class);
         image.setKey(imageKey);
         if(image == null){
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Image not found");
