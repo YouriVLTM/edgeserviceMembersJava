@@ -5,6 +5,7 @@ import com.example.membersedgeservice.model.ImgBoardUser;
 import com.example.membersedgeservice.model.JwtRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -142,9 +143,15 @@ public class UserControllerIntigrationTest {
             String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
                     new ArrayList<>()));
 
-
-            mockMvc.perform(delete("/user/"+user.getEmail()).header("Authorization", "Bearer " + token))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/user/"+user.getEmail()).header("Authorization", "Bearer " + token)
+                    .content(mapper.writeValueAsString(user))
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.firstname",is("Robin")))
+                    .andExpect(jsonPath("$.lastname",is("Vranckx")))
+                    .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
+                    .andExpect(jsonPath("$.password",is(IsNull.nullValue())));
 
         }
         @Test

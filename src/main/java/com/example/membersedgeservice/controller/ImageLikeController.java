@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-
+@RestController
 public class ImageLikeController {
     @Autowired
     private RestTemplate restTemplate;
