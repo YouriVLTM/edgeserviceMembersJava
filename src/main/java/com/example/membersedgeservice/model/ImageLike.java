@@ -19,11 +19,18 @@ public class ImageLike {
         this.state = newLike.state;
         this.likeKey = DigestUtils.sha256Hex(imageKey + userEmail + new Date(System.currentTimeMillis()));
     }
-    public ImageLike(boolean state, String userEmail, String imageKey) {
+//    public ImageLike(boolean state, String userEmail, String imageKey) {
+//        this.state = state;
+//        this.userEmail = userEmail;
+//        this.imageKey = imageKey;
+//        this.likeKey = DigestUtils.sha256Hex(imageKey + userEmail + new Date(System.currentTimeMillis()));
+//    }
+
+    public ImageLike(boolean state, String userEmail, String imageKey, String likeKey) {
         this.state = state;
         this.userEmail = userEmail;
         this.imageKey = imageKey;
-        this.likeKey = DigestUtils.sha256Hex(imageKey + userEmail + new Date(System.currentTimeMillis()));
+        this.likeKey = likeKey;
     }
 
     public String getLikeKey() {
@@ -31,7 +38,7 @@ public class ImageLike {
     }
 
     public void setLikeKey(String key) {
-        this.likeKey = likeKey;
+        this.likeKey = key;
     }
 
     public int getId() {
