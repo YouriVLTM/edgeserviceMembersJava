@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.membersedgeservice.config.JwtTokenUtil;
+
+import java.util.List;
+
 @RestController
 public class UserController {
     @Autowired
@@ -63,9 +66,18 @@ public class UserController {
         String jwtToken = token.substring(7);
         String emailToken = jwtTokenUtil.getUsernameFromToken(jwtToken);
         if(emailToken.equalsIgnoreCase(email)){
-            //TODO delete evryting from user
+            //TODO delete evryting from comment
+            ImageLikeController controllerImageLike = new ImageLikeController();
+            List<ImageLike> imagesLikesUser=controllerImageLike.getlikesByUserEmail(email);
+            for(int i=0;i<imagesLikesUser.size();i++){
+                controllerImageLike.deleteLike(imagesLikesUser.get(i).getLikeKey());
+            }
 
-
+            ImageController controllerImage = new ImageController();
+            List<Image> images=controllerImage.getImagesByUserEmail(email);
+            for(int i=0;i<images.size();i++){
+                controllerImage.deleteImage(images.get(i).getKey());
+            }
 
             ResponseEntity response =restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+email, HttpMethod.DELETE,null,
                     String.class);
