@@ -38,10 +38,12 @@ spec:
             - containerPort: 3306        # The port that the container exposes
               name: mariadb
           env:                    # Environment variables supplied to the Pod
-            - name: MYSQL_DB
+            - name: MYSQL_DATABASE
               value: "imagesdb"
             - name: MYSQL_ROOT_PASSWORD
               value: "test"
+            - name: MARIADB_DATABASE
+              value: "imagesdb"
 ---
 apiVersion: v1                   # API version
 kind: Service                    # Type of the kubernetes resource
@@ -87,9 +89,13 @@ spec:
               cpu: 0.4
               memory: "400Mi"
           env:                    # Environment variables supplied to the Pod
-            - name: MARIADBDB_HOST
+            - name: MARIADB_HOST
               value: "image-service-mariadb"
             - name: MARIADB_PORT
               value: "3306"
+            - name: DB_PASSWORD
+              value: "test"
             - name: SERVER_PORT
               value: "8052"
+            - name: MARIADB_NAME
+              value: "imagesdb"
