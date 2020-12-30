@@ -1,3 +1,19 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-service-secret
+type: Opaque
+data:
+  POSTGRES_DB_HOST: dXNlci1zZXJ2aWNlLXBvc3RncmVzc3Fs #user-service-postgressql
+  POSTGRES_DB_NAME: YWR2YW5jZWRfcHJvZ3JhbWluZ19wcm9qZWN0X3VzZXJfREI= #advanced_programing_project_user_DB
+  POSTGRES_DB: YWR2YW5jZWRfcHJvZ3JhbWluZ19wcm9qZWN0X3VzZXJfREI= #advanced_programing_project_user_DB
+  POSTGRES_USER: cG9zdGdyZXM= #postgres
+  POSTGRES_PASSWORD: cG9zdGdyZXM=
+  POSTGRES_DB_PORT: NTQzMg== #5432
+  POSTGRES_DB_USERNAME: cG9zdGdyZXM=
+  POSTGRES_DB_PASSWORD: cG9zdGdyZXM=
+
+---
 apiVersion: v1                    # API version
 kind: Service                     # Type of kubernetes resource
 metadata:
@@ -38,11 +54,20 @@ spec:
               name: postgres
           env:                    # Environment variables supplied to the Pod
             - name: POSTGRES_DB
-              value: "advanced_programing_project_user_DB"
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_DB
             - name: POSTGRES_USER
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_PASSWORD
 ---
 apiVersion: v1                   # API version
 kind: Service                    # Type of the kubernetes resource
@@ -88,12 +113,27 @@ spec:
               memory: "200Mi"
           env:                    # Environment variables supplied to the Pod
             - name: POSTGRES_DB_HOST
-              value: "user-service-postgressql"
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_DB_HOST
             - name: POSTGRES_DB_PORT
-              value: "5432"
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_DB_PORT
             - name: POSTGRES_DB_NAME
-              value: "advanced_programing_project_user_DB"
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_DB_NAME
             - name: POSTGRES_DB_USERNAME
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_DB_USERNAME
             - name: POSTGRES_DB_PASSWORD
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_DB_PASSWORD
