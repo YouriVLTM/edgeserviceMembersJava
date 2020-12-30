@@ -21,12 +21,21 @@ public class UserController {
     @Value("${userservice.baseurl}")
     private String userServiceBaseUrl;
 
-    @PostMapping(value ="/user")
+    @GetMapping("/user/{email}")
+    public ImgBoardUser getUser(@PathVariable String email,@RequestHeader(name="Authorization") String token) {
+        ImgBoardUser user = restTemplate.getForObject("http://"+userServiceBaseUrl+" /user/"+email, ImgBoardUser.class);
+        user.setPassword(null);
+        return user;
+    }
+
+
+        @PostMapping(value ="/user")
     public ImgBoardUser register(@RequestBody ImgBoardUser userRequest){
 
         //Make a new comment
         //ImgBoardUser user = restTemplate.postForObject("http://" + userServiceBaseUrl + "/login",
-        ImgBoardUser user = restTemplate.postForObject("http://"+ userServiceBaseUrl + "/user",
+        //ImgBoardUser user = restTemplate.postForObject("http://localhost:8051/user",
+        ImgBoardUser user = restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
                 userRequest,ImgBoardUser.class);
         return user;
         //System.out.println("email user :" + user.getEmail());
@@ -41,7 +50,7 @@ public class UserController {
         {
             HttpEntity<ImgBoardUser> entity = new HttpEntity<ImgBoardUser>(updateUser);
 
-            HttpEntity<ImgBoardUser> user =restTemplate.exchange("http://localhost:8051/user", HttpMethod.PUT,
+            HttpEntity<ImgBoardUser> user =restTemplate.exchange("http://" + userServiceBaseUrl + "/user", HttpMethod.PUT,
                     entity,ImgBoardUser.class);
             return user.getBody();
         }else{
@@ -58,7 +67,7 @@ public class UserController {
 
 
 
-            ResponseEntity response =restTemplate.exchange("http://localhost:8051/user/"+email, HttpMethod.DELETE,null,
+            ResponseEntity response =restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+email, HttpMethod.DELETE,null,
                     String.class);
             return response;
         }else{

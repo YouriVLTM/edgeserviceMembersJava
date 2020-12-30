@@ -9,34 +9,39 @@ spec:
     - port: 3306
   selector:                       # Selects any Pod with labels `app=comment-service,tier=mongo`
     app: image-service
-    tier: MariaDB
+    tier: mariadb
   clusterIP: None
 ---
 apiVersion: apps/v1
 kind: Deployment                    # Type of the kubernetes resource
 metadata:
-  name: image-service-MariaDB-deployment           # Name of the deployment
+  name: image-service-mariadb-deployment           # Name of the deployment
   labels:                           # Labels applied to this deployment
     app: image-service
 spec:
   selector:
     matchLabels:                    # This deployment applies to the Pods matching the specified labels
       app: image-service
-      tier: MariaDB
+      tier: mariadb
   strategy:
     type: Recreate
   template:                         # Template for the Pods in this deployment
     metadata:
       labels:                       # Labels to be applied to the Pods in this deployment
         app: image-service
-        tier: MariaDB
+        tier: mariadb
     spec:                           # The spec for the containers that will be run inside the Pods in this deployment
       containers:
-        - image: MariaDB                # The container image
-          name: MariaDB
+        - image: mariadb                # The container image
+          name: mariadb
           ports:
             - containerPort: 3306        # The port that the container exposes
-              name: MariaDB
+              name: mariadb
+          env:                    # Environment variables supplied to the Pod
+            - name: MYSQL_DB
+              value: "imagesdb"
+            - name: MYSQL_ROOT_PASSWORD
+              value: "test"
 ---
 apiVersion: v1                   # API version
 kind: Service                    # Type of the kubernetes resource
@@ -79,8 +84,8 @@ spec:
           resources:
             limits:
 
-              cpu: 0.2
-              memory: "200Mi"
+              cpu: 0.4
+              memory: "400Mi"
           env:                    # Environment variables supplied to the Pod
             - name: MARIADB_DB_HOST
               value: "image-service-mariadb"
