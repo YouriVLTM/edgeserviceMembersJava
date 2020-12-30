@@ -23,20 +23,19 @@ public class ImageController {
     private String imageServiceBaseurl;
 
 
-
-    @GetMapping("/images/{imageKey}")
-    public List<Image> getImagesByImageKey(@PathVariable String imageKey){
-
-        // does image exist?
-
-        // get Image by key
-        ResponseEntity<List<Image>> responseEntityReviews =
-                restTemplate.exchange("http://" + imageServiceBaseurl + "/images/{imageKey}",
-                        HttpMethod.GET, null, new ParameterizedTypeReference<List<Image>>() {
-                        }, imageKey);
-
-        return responseEntityReviews.getBody();
-    }
+//    @GetMapping("/images")
+//    public List<Image> getImages(){
+//
+//        // does image exist?
+//
+//        // get images by user
+//        ResponseEntity<List<Image>> responseEntityReviews =
+//                restTemplate.exchange("http://" + imageServiceBaseurl + "/images",
+//                        HttpMethod.GET, null, new ParameterizedTypeReference<List<Image>>() {
+//                        });
+//
+//        return responseEntityReviews.getBody();
+//    }
     @GetMapping("/images/user/{userEmail}")
     public List<Image> getImagesByUserEmail(@PathVariable String userEmail){
 
@@ -44,7 +43,7 @@ public class ImageController {
 
         // get images by user
         ResponseEntity<List<Image>> responseEntityReviews =
-                restTemplate.exchange("http://" + imageServiceBaseurl + "/images/{userEmail}",
+                restTemplate.exchange("http://" + imageServiceBaseurl + "/images/user/{userEmail}",
                         HttpMethod.GET, null, new ParameterizedTypeReference<List<Image>>() {
                         }, userEmail);
 
@@ -55,9 +54,6 @@ public class ImageController {
                                        @RequestParam String source,
                                        @RequestParam String description){
 
-
-
-
         //Make a new image
         Image image =
                 restTemplate.postForObject("http://" + imageServiceBaseurl + "/images",
@@ -67,18 +63,12 @@ public class ImageController {
     }
 
     @PutMapping("/images")
-    public Image updateImage(@RequestParam String imageKey, @RequestParam String description, @RequestParam String source) {
-
-        //check if likeKey exist
-        Image image = restTemplate.getForObject("http://" + imageServiceBaseurl + "/images/" + imageKey,
-                Image.class);
+    public Image updateImage(@RequestBody Image updatedImage) {
 
         // Update like
-        image.setDescription(description);
-        image.setSource(source);
         ResponseEntity<Image> responseEntityReview =
                 restTemplate.exchange("http://" + imageServiceBaseurl + "/images",
-                        HttpMethod.PUT, new HttpEntity<>(image), Image.class);
+                        HttpMethod.PUT, new HttpEntity<>(updatedImage), Image.class);
 
         Image retrievedImage = responseEntityReview.getBody();
 
