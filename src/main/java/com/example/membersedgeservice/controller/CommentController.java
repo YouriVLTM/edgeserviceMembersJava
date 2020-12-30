@@ -31,25 +31,46 @@ public class CommentController {
     @Value("${imageservice.baseurl}")
     private String imageServiceBaseUrl;
 
-
-    //TODO get Comments/useremail
-
-    @GetMapping("/comments/images/{imagekey}")
-    public List<Comment> getRankingsByUserId(@PathVariable String imagekey){
-
-        //TODO check if imageKEY exist
-
-
+    //CHECK unit OK
+    @GetMapping("/comments/users/{userEmail}")
+    public ResponseEntity<List<Comment>> getCommentsByUserEmail(@PathVariable String userEmail){
+        //check if useremail exist
+        ImgBoardUser user = restTemplate.getForObject("http://" + userServiceBaseUrl + "/user/" + userEmail,
+                ImgBoardUser.class);
+        if(user == null){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User not found");
+        }
 
         // GET COMMENTS FROM IMAGE LIST
-        ResponseEntity<List<Comment>> responseEntityReviews =
-                restTemplate.exchange("http://" + commentServiceBaseUrl + "/comments/images/{imagekey}",
+        ResponseEntity<List<Comment>> comments =
+                restTemplate.exchange("http://" + commentServiceBaseUrl + "/comments/users/{userEmail}",
                         HttpMethod.GET, null, new ParameterizedTypeReference<List<Comment>>() {
-                        }, imagekey);
+                        }, userEmail);
 
-        return responseEntityReviews.getBody();
+        return comments;
     }
 
+    //CHECK OK
+    @GetMapping("/comments/images/{key}")
+    public ResponseEntity<List<Comment>> getCommentsByImageKey(@PathVariable String key){
+
+        //check if imageKEY exist
+        Image image = restTemplate.getForObject("http://" + imageServiceBaseUrl + "/images/" + key,
+                Image.class);
+        if(image == null){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Image not found");
+        }
+
+        // GET COMMENTS FROM IMAGE LIST
+        ResponseEntity<List<Comment>> comments =
+                restTemplate.exchange("http://" + commentServiceBaseUrl + "/comments/images/{imagekey}",
+                        HttpMethod.GET, null, new ParameterizedTypeReference<List<Comment>>() {
+                        }, image.getKey());
+
+        return comments;
+    }
+
+    //CHECK OK
     @PostMapping("/comments")
     public ResponseEntity<FilledImageUserComment> addComment(@RequestParam String userEmail,
                                              @RequestParam String imageKey,
@@ -63,12 +84,9 @@ public class CommentController {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User not found");
         }
 
-
-
-        //TODO check if imageKey exist
+        // check if imageKey exist
         Image image = restTemplate.getForObject("http://" + imageServiceBaseUrl + "/images/" + imageKey,
                 Image.class);
-        image.setKey(imageKey);
         if(image == null){
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Image not found");
         }
@@ -86,8 +104,9 @@ public class CommentController {
         return new ResponseEntity<FilledImageUserComment>(new FilledImageUserComment(image, user,comment), HttpStatus.OK);
     }
 
+    //CHECK OK
     @PutMapping("/comments")
-    public FilledImageUserComment updateComment(@RequestParam String commentKey,
+    public ResponseEntity<FilledImageUserComment> updateComment(@RequestParam String commentKey,
                                                 @RequestParam String title,
                                                 @RequestParam String description) {
 
@@ -95,26 +114,39 @@ public class CommentController {
         Comment comment = restTemplate.getForObject("http://" + commentServiceBaseUrl + "/comments/" + commentKey,
                 Comment.class);
 
+        //check if useremail exist
+        ImgBoardUser user = restTemplate.getForObject("http://" + userServiceBaseUrl + "/user/" + comment.getUserEmail(),
+                ImgBoardUser.class);
+        if(user == null){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User not found");
+        }
+
+        // check if imageKey exist
+        Image image = restTemplate.getForObject("http://" + imageServiceBaseUrl + "/images/" + comment.getImageKey(),
+                Image.class);
+        if(image == null){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Image not found");
+        }
+
+
         // Update comment
         comment.setTitle(title);
         comment.setDescription(description);
+
         ResponseEntity<Comment> responseEntityReview =
                 restTemplate.exchange("http://" + commentServiceBaseUrl + "/comments",
                         HttpMethod.PUT, new HttpEntity<>(comment), Comment.class);
 
         Comment retrievedComment = responseEntityReview.getBody();
 
-        //TODO get user
-        ImgBoardUser user = new ImgBoardUser();
-
-        //TODO get Images
-        Image image = new Image();
 
 
-        return new FilledImageUserComment(image, user, retrievedComment);
+
+        return new ResponseEntity<FilledImageUserComment>(new FilledImageUserComment(image, user, retrievedComment), HttpStatus.OK);
 
     }
 
+    //CHECK OK
     @DeleteMapping("/comments/{key}")
     public ResponseEntity deleteComment(@PathVariable String key){
 
