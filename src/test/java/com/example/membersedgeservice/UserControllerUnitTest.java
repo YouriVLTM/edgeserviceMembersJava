@@ -270,62 +270,62 @@ public class UserControllerUnitTest {
                 .andExpect(status().isOk());
 
     }
-//    @Test
-//    public void whenDeleteUser_thendeleteEverythingAndReturnStatus() throws Exception {
-////        ImageLike like1 = new ImageLike(true, "r0703028@student.thomasmore.be", "1");
-//        List<ImageLike> likesList= new ArrayList<ImageLike>();
-//        likesList.add(like1);
-//
-//        Image image1= new Image("testSource", "r0703028@student.thomasmore.be", "test");
-//        List<Image> imageList= new ArrayList<Image>();
-//        imageList.add(image1);
-//
-//        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
-//        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
-//        //whenLogin_thenReturnToken();
-//        String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
-//                new ArrayList<>()));
-//        mockServer.expect(ExpectedCount.manyTimes(),
-//                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
-//                .andExpect(method(HttpMethod.GET))
-//                .andRespond(withStatus(HttpStatus.OK)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(mapper.writeValueAsString(user))
-//                );
-//        mockServer.expect(ExpectedCount.once(),
-//                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/user/"+user.getEmail())))
-//                .andExpect(method(HttpMethod.GET))
-//                .andRespond(withStatus(HttpStatus.OK)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(mapper.writeValueAsString(likesList))
-//                );
-//        mockServer.expect(ExpectedCount.once(),
-//                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/"+like1.getLikeKey())))//
-//                .andExpect(method(HttpMethod.DELETE))
-//                .andRespond(withStatus(HttpStatus.OK));
-//
-//        mockServer.expect(ExpectedCount.once(),
-//                requestTo(new URI("http://" + imageServiceBaseurl + "/images/user/"+user.getEmail())))
-//                .andExpect(method(HttpMethod.GET))
-//                .andRespond(withStatus(HttpStatus.OK)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(mapper.writeValueAsString(imageList))
-//                );
-//        mockServer.expect(ExpectedCount.once(),
-//                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+image1.getKey())))
-//                .andExpect(method(HttpMethod.DELETE))
-//                .andRespond(withStatus(HttpStatus.OK));
-//
-//        mockServer.expect(ExpectedCount.manyTimes(),
-//                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
-//                .andExpect(method(HttpMethod.DELETE))
-//                .andRespond(withStatus(HttpStatus.OK));
-//
-//
-//        mockMvc.perform(delete("/user/"+user.getEmail()).header("Authorization", "Bearer " + token))
-//                .andExpect(status().isOk());
-//
-//    }
+    @Test
+    public void whenDeleteUser_thendeleteEverythingAndReturnStatus() throws Exception {
+        ImageLike like1 = new ImageLike(true, "r0703028@student.thomasmore.be", "1");
+        List<ImageLike> likesList= new ArrayList<ImageLike>();
+        likesList.add(like1);
+
+        Image image1= new Image("testSource", "r0703028@student.thomasmore.be", "test");
+        List<Image> imageList= new ArrayList<Image>();
+        imageList.add(image1);
+
+        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
+        //whenLogin_thenReturnToken();
+        String token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
+                new ArrayList<>()));
+        mockServer.expect(ExpectedCount.manyTimes(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(likesList))
+                );
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/"+like1.getLikeKey())))//
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK));
+
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(imageList))
+                );
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK));
+
+        mockServer.expect(ExpectedCount.manyTimes(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK));
+
+
+        mockMvc.perform(delete("/user/"+user.getEmail()).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+    }
     @Test
     public void whenDeleteUserFromOtherUSer_thenReturn403() throws Exception {
         ImgBoardUser user1 = new ImgBoardUser(
