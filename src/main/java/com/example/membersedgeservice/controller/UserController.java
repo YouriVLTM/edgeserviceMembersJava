@@ -18,6 +18,7 @@ import java.util.List;
 public class UserController {
     @Autowired private ImageLikeController controllerImageLike;
     @Autowired private ImageController imageController;
+    @Autowired private CommentController commentController;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -71,6 +72,14 @@ public class UserController {
         String emailToken = jwtTokenUtil.getUsernameFromToken(jwtToken);
         if(emailToken.equalsIgnoreCase(email)){
             //TODO delete evryting from comment
+            ResponseEntity<List<Comment>> comments=commentController.getCommentsByUserEmail(email);
+            List<Comment> commentsList= comments.getBody();
+            if(commentsList !=null) {
+                for (int i = 0; i < commentsList.size(); i++) {
+                    commentController.deleteComment(commentsList.get(i).getKey());
+                }
+            }
+
             List<ImageLike> imagesLikesUser=controllerImageLike.getlikesByUserEmail(email);
             if(imagesLikesUser !=null) {
                 for (int i = 0; i < imagesLikesUser.size(); i++) {
