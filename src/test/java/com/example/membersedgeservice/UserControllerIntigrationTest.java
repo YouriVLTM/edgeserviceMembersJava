@@ -1,10 +1,7 @@
 package com.example.membersedgeservice;
 
 import com.example.membersedgeservice.config.JwtTokenUtil;
-import com.example.membersedgeservice.model.Image;
-import com.example.membersedgeservice.model.ImageLike;
-import com.example.membersedgeservice.model.ImgBoardUser;
-import com.example.membersedgeservice.model.JwtRequest;
+import com.example.membersedgeservice.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.hamcrest.core.IsNull;
@@ -49,6 +46,9 @@ public class UserControllerIntigrationTest {
     private String imageServiceBaseurl;
     @Value("${likeservice.baseurl}")
     private String likeServiceBaseUrl;
+
+    @Value("${commentservice.baseurl}")
+    private String commentServiceBaseUrl;
         @Autowired
         private RestTemplate restTemplate;
 
@@ -59,7 +59,14 @@ public class UserControllerIntigrationTest {
         private String token;
         private ImageLike like1 = new ImageLike(true, "r0703028@student.thomasmore.be", "1");
         private Image image1= new Image("testSource", "r0703028@student.thomasmore.be", "test");
+        private Comment comment1 = new Comment(
+            "Comment1",
+            "Dat is mooi.",
+            "com1@hotmail.com",
+            "123A",
+            "com123A"
 
+        );
         private ObjectMapper mapper = new ObjectMapper();
         @BeforeEach
         public void beforeAllTests() {
@@ -119,6 +126,10 @@ public class UserControllerIntigrationTest {
     }
             try{
                 restTemplate.delete("http://" + likeServiceBaseUrl + "/likes/" + like1.getLikeKey());
+            }catch(Exception e){
+            }
+            try{
+                restTemplate.delete("http://" + commentServiceBaseUrl + "/comments/" + comment1.getKey());
             }catch(Exception e){
             }
         }
@@ -260,6 +271,11 @@ public class UserControllerIntigrationTest {
         }
     @Test
     public void whenDeleteUser_thendeleteEverythingAndReturnStatus() throws Exception {
+        try{
+            comment1 = restTemplate.postForObject("http://" + commentServiceBaseUrl + "/comments",
+                    comment1,Comment.class);
+        } catch (Exception e) {
+        }
         try{
             image1 = restTemplate.postForObject("http://" + imageServiceBaseurl + "/images",
                     image1,Image.class);
