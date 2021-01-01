@@ -4,7 +4,9 @@ import com.example.membersedgeservice.config.JwtTokenUtil;
 import com.example.membersedgeservice.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.client.ExpectedCount;
@@ -30,6 +33,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -46,9 +50,14 @@ public class CommentControllerIntigrationTest {
     @Value("${userservice.baseurl}")
     private String userServiceBaseUrl;
 
+    @Value("${imageservice.baseurl}")
+    private String imageServiceBaseUrl;
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     //login AUTHENTICATION
     private String token;
@@ -57,56 +66,49 @@ public class CommentControllerIntigrationTest {
 //    private MockRestServiceServer mockServer;
     private ObjectMapper mapper = new ObjectMapper();
 
-//    private Comment comment1 = new Comment(
-//            "Comment1",
-//            "Dat is mooi.",
-//            "com1@hotmail.com",
-//            "123A",
-//            "com123A"
-//
-//    );
-//
-//    private Comment comment2 = new Comment(
-//            "Comment2",
-//            "Dat is speciaal.",
-//            "com2@hotmail.com",
-//            "123B"
-//    );
-//
-//    private Comment comment3 = new Comment(
-//            "Comment3",
-//            "Dat is speciaal.",
-//            "com3@hotmail.com",
-//            "123A"
-//    );
-//
-//    private Comment comment4 = new Comment(
-//            "Comment4",
-//            "Dat is speciaal.",
-//            "com4@hotmail.com",
-//            "123B"
-//    );
 
-//    /*IMAGES*/
-//    private Image image1 = new Image("AB.png","gust@gmail.com","hond");
-//    private Image image2 = new Image("ABC.png","you@gmail.com","kat");
-//    private Image image3 = new Image("ABCD.png","me@gmail.com","konijn");
-//    private Image image4 = new Image("ABCDE.png","you@gmail.com","vis");
-//
-//
-//    private List<Comment> allcommentFromImage123A = Arrays.asList(comment1, comment3);
-//    private List<Comment> allcommentFromImage123B = Arrays.asList(comment2, comment4);
+    //INIT DATA Objects
+    private Comment comment1 = new Comment(
+            "Comment1",
+            "Dat is mooi.",
+            "r0703028@student.thomasmore.be",
+            ""
+
+    );
+    private Comment comment2 = new Comment(
+            "Comment2",
+            "Dat is speciaal.",
+            "r0703029@student.thomasmore.be",
+            ""
+    );
+    private Comment comment3 = new Comment(
+            "Comment3",
+            "Dat is speciaal.",
+            "r0703028@student.thomasmore.be",
+            ""
+    );
+
+    private Comment updateComment = new Comment(
+            "Upcommand",
+            "Dat is speciaal.",
+            "r0703029@student.thomasmore.be",
+            ""
+    );
+
+
+    private Comment newComment = new Comment(
+            "newcommand",
+            "Dat is speciaal.",
+            "r0703029@student.thomasmore.be",
+            ""
+    );
+    /*IMAGES*/
+    private Image image1 = new Image("AB.png","gust@gmail.com","hond");
+    private Image image2 = new Image("ABC.png","you@gmail.com","kat");
 
 
     @BeforeEach
     public void initializeMockserver() throws Exception{
-
-//        /*Set Images keys*/
-//        image1.setKey("123A");
-//        image2.setKey("123B");
-//        image3.setKey("123C");
-//        image4.setKey("123D");
-
         JwtRequest login1 = new JwtRequest(
                 "r0703028@student.thomasmore.be",
                 "test"
@@ -127,43 +129,185 @@ public class CommentControllerIntigrationTest {
 
     }
 
+    @BeforeEach
+    public void beforeTests() {
+        // Save All Images
+        try{
+            image1 =restTemplate.postForObject("http://" + imageServiceBaseUrl + "/images",
+                    image1,Image.class);
+        } catch (Exception e) {
+        }
+
+        try{
+            image2 =restTemplate.postForObject("http://" + imageServiceBaseUrl + "/images",
+                    image2,Image.class);
+        } catch (Exception e) {
+        }
+
+        // link to comment
+        comment1.setImageKey(image1.getKey());
+        comment3.setImageKey(image1.getKey());
+        comment2.setImageKey(image2.getKey());
+        updateComment.setImageKey(image2.getKey());
+        newComment.setImageKey(image2.getKey());
+
+        // SAVE ALL comments
+        try{
+            comment1 =restTemplate.postForObject("http://" + commentServiceBaseUrl + "/comments",
+                    comment1,Comment.class);
+        } catch (Exception e) {
+        }
+
+        try{
+            comment2 =restTemplate.postForObject("http://" + commentServiceBaseUrl + "/comments",
+                    comment2,Comment.class);
+        } catch (Exception e) {
+        }
+
+        try{
+            comment3 =restTemplate.postForObject("http://" + commentServiceBaseUrl + "/comments",
+                    comment3,Comment.class);
+        } catch (Exception e) {
+        }
+
+        try{
+            updateComment =restTemplate.postForObject("http://" + commentServiceBaseUrl + "/comments",
+                    updateComment,Comment.class);
+        } catch (Exception e) {
+        }
+
+    }
+
+    @AfterEach
+    public void afterTests() {
+        // DELETE ALL IMAGES
+        try{
+            restTemplate.delete("http://" + imageServiceBaseUrl + "/images/" + image1.getKey());
+        }catch(Exception e){
+        }
+        try{
+            restTemplate.delete("http://" + imageServiceBaseUrl + "/images/" + image2.getKey());
+        }catch(Exception e){
+        }
+
+        // DELETE ALL COMMENTS
+        try{
+            restTemplate.delete("http://" + commentServiceBaseUrl + "/comments/" + comment1.getKey());
+        }catch(Exception e){
+        }
+        try{
+            restTemplate.delete("http://" + commentServiceBaseUrl + "/comments/" + comment2.getKey());
+        }catch(Exception e){
+        }
+        try{
+            restTemplate.delete("http://" + commentServiceBaseUrl + "/comments/" + comment3.getKey());
+        }catch(Exception e){
+        }
+        try{
+            restTemplate.delete("http://" + commentServiceBaseUrl + "/comments/" + newComment.getKey());
+        }catch(Exception e){
+        }
+        try{
+            restTemplate.delete("http://" + commentServiceBaseUrl + "/comments/" + updateComment.getKey());
+        }catch(Exception e){
+        }
+
+    }
+
+    @Test
+    public void whenGetCommentsByUserEmail_thenReturnAllCommentsJson() throws Exception{
+        mockMvc.perform(get("/comments/users/{userEmail}", comment1.getUserEmail()).header("Authorization", "Bearer " + token))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title",is(comment1.getTitle())))
+                .andExpect(jsonPath("$[0].description",is(comment1.getDescription())))
+                .andExpect(jsonPath("$[0].userEmail",is(comment1.getUserEmail())))
+                .andExpect(jsonPath("$[0].imageKey",is(comment1.getImageKey())))
+                .andExpect(jsonPath("$[1].title",is(comment3.getTitle())))
+                .andExpect(jsonPath("$[1].description",is(comment3.getDescription())))
+                .andExpect(jsonPath("$[1].userEmail",is(comment3.getUserEmail())))
+                .andExpect(jsonPath("$[1].imageKey",is(comment3.getImageKey())));
+    }
+    @Test
+    public void whenGetCommentsByBADUserEmail_thenReturnUserBadRequest() throws Exception{
+        mockMvc.perform(get("/comments/users/{userEmail}", "fout").header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"User Not Found\"", result.getResolvedException().getMessage()));
+    }
+
+
     @Test
     public void whenGetCommentsByImagesKey_thenReturnAllCommentsJson() throws Exception{
 
-        mockMvc.perform(get("/comments/images/{key}", "3d5201febd23107ac50830d0a2b1380efd3ca77fe1624c2ad4e6a6e2483f965d").header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/comments/images/{key}", image1.getKey()).header("Authorization", "Bearer " + token))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title",is("Comment1")))
-                .andExpect(jsonPath("$[0].description",is("Dat is mooi.")))
-                .andExpect(jsonPath("$[0].userEmail",is("r0703028@student.thomasmore.be")))
-                .andExpect(jsonPath("$[0].imageKey",is("3d5201febd23107ac50830d0a2b1380efd3ca77fe1624c2ad4e6a6e2483f965d")))
-                .andExpect(jsonPath("$[1].title",is("Comment1")))
-                .andExpect(jsonPath("$[1].description",is("Dat is mooi.")))
-                .andExpect(jsonPath("$[1].userEmail",is("r0703028@student.thomasmore.be")))
-                .andExpect(jsonPath("$[1].imageKey",is("3d5201febd23107ac50830d0a2b1380efd3ca77fe1624c2ad4e6a6e2483f965d")));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title",is(comment1.getTitle())))
+                .andExpect(jsonPath("$[0].description",is(comment1.getDescription())))
+                .andExpect(jsonPath("$[0].userEmail",is(comment1.getUserEmail())))
+                .andExpect(jsonPath("$[0].imageKey",is(comment1.getImageKey())))
+                .andExpect(jsonPath("$[1].title",is(comment3.getTitle())))
+                .andExpect(jsonPath("$[1].description",is(comment3.getDescription())))
+                .andExpect(jsonPath("$[1].userEmail",is(comment3.getUserEmail())))
+                .andExpect(jsonPath("$[1].imageKey",is(comment3.getImageKey())));
     }
     @Test
+    public void whenGetCommentsByBadImageKey_thenReturnBadRequest() throws Exception{
+        mockMvc.perform(get("/comments/images/{key}", "fout").header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"ImageKey Not Found\"", result.getResolvedException().getMessage()));
+    }
+
+
+    @Test
     public void whenAddComment_thenReturnFilledImageUserCommentJson() throws Exception {
+        mockMvc.perform(post("/comments").header("Authorization", "Bearer " + token)
+                .param("userEmail", newComment.getUserEmail())
+                .param("imageKey", newComment.getImageKey())
+                .param("title", newComment.getTitle())
+                .param("description", newComment.getDescription())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title",is(newComment.getTitle())))
+                .andExpect(jsonPath("$.description",is(newComment.getDescription())))
+                .andExpect(jsonPath("$.user.email",is(newComment.getUserEmail())))
+                .andExpect(jsonPath("$.image.key",is(newComment.getImageKey())));
+    }
+    @Test
+    public void whenAddCommentByBadUserEmail_thenReturnBadRequest() throws Exception {
 
         mockMvc.perform(post("/comments").header("Authorization", "Bearer " + token)
-                .param("userEmail", "r0703028@student.thomasmore.be")
+                .param("userEmail", "fout")
                 .param("imageKey", "3d5201febd23107ac50830d0a2b1380efd3ca77fe1624c2ad4e6a6e2483f965d")
                 .param("title", "Comment3")
                 .param("description", "Dat is mooi.")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title",is("Comment3")))
-                .andExpect(jsonPath("$.description",is("Dat is mooi.")))
-                .andExpect(jsonPath("$.user.email",is("r0703028@student.thomasmore.be")))
-                .andExpect(jsonPath("$.image.key",is("3d5201febd23107ac50830d0a2b1380efd3ca77fe1624c2ad4e6a6e2483f965d")));
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"User Not Found\"", result.getResolvedException().getMessage()));
 
     }
+    @Test
+    public void whenAddCommentByBadImageKey_thenReturnBadRequest() throws Exception {
+
+        mockMvc.perform(post("/comments").header("Authorization", "Bearer " + token)
+                .param("userEmail", "r0703028@student.thomasmore.be")
+                .param("imageKey", "fout")
+                .param("title", "Comment3")
+                .param("description", "Dat is mooi.")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"ImageKey Not Found\"", result.getResolvedException().getMessage()));
+
+    }
+
 
     @Test
     public void whenUpdateComment_thenReturnFilledImageUserCommentJson() throws Exception {
         mockMvc.perform(put("/comments").header("Authorization", "Bearer " + token)
-                .param("commentKey", "f3b3e59c667ef933bcc0cc5f885d6d76a1b047e17b589fcccb0e01cf31724ceb")
+                .param("commentKey", updateComment.getKey())
                 .param("title", "WIE")
                 .param("description", "PLAY")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -174,10 +318,10 @@ public class CommentControllerIntigrationTest {
 
     }
 
+
     @Test
     public void whenDeleteComment_thenReturnStatusOk() throws Exception {
-
-        mockMvc.perform(delete("/comments/{key}", "c5f877a92151eb31ec6e5115fdad4806a603cadcb54711d1d99a74b27b0cb57a").header("Authorization", "Bearer " + token))
+        mockMvc.perform(delete("/comments/{key}", updateComment.getKey()).header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 }

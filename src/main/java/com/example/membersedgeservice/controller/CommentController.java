@@ -36,6 +36,10 @@ public class CommentController {
         try {
             user = restTemplate.getForObject("http://" + userServiceBaseUrl + "/user/" + userEmail,
                     ImgBoardUser.class);
+            if(user == null){
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "");
+            }
         }catch (Exception e){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "User Not Found");
@@ -58,6 +62,10 @@ public class CommentController {
         try{
             image = restTemplate.getForObject("http://" + imageServiceBaseUrl + "/images/" + key,
                     Image.class);
+            if(image == null){
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "");
+            }
         }catch (Exception e){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "ImageKey Not Found");
@@ -84,6 +92,10 @@ public class CommentController {
         try {
             user = restTemplate.getForObject("http://" + userServiceBaseUrl + "/user/" + userEmail,
                     ImgBoardUser.class);
+            if(user == null){
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "");
+            }
         }catch (Exception e){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "User Not Found");
@@ -94,6 +106,10 @@ public class CommentController {
         try{
             image = restTemplate.getForObject("http://" + imageServiceBaseUrl + "/images/" + imageKey,
                     Image.class);
+            if(image == null){
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "");
+            }
         }catch (Exception e){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "ImageKey Not Found");
@@ -123,6 +139,10 @@ public class CommentController {
         try{
             comment = restTemplate.getForObject("http://" + commentServiceBaseUrl + "/comments/" + commentKey,
                     Comment.class);
+            if(comment == null){
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "");
+            }
         }catch (Exception e){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Comment key Not Found");
