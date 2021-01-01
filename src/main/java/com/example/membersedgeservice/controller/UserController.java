@@ -72,8 +72,8 @@ public class UserController {
         String emailToken = jwtTokenUtil.getUsernameFromToken(jwtToken);
         if(emailToken.equalsIgnoreCase(email)){
             //TODO delete evryting from comment
-            ResponseEntity<List<Comment>> comments=commentController.getCommentsByUserEmail(email);
-            List<Comment> commentsList= comments.getBody();
+            List<Comment> comments=commentController.getCommentsByUserEmail(email);
+            List<Comment> commentsList= comments;
             if(commentsList !=null) {
                 for (int i = 0; i < commentsList.size(); i++) {
                     commentController.deleteComment(commentsList.get(i).getKey());
