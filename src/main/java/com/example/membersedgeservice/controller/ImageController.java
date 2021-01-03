@@ -22,20 +22,6 @@ public class ImageController {
     @Value("${imageservice.baseurl}")
     private String imageServiceBaseurl;
 
-
-//    @GetMapping("/images")
-//    public List<Image> getImages(){
-//
-//        // does image exist?
-//
-//        // get images by user
-//        ResponseEntity<List<Image>> responseEntityReviews =
-//                restTemplate.exchange("http://" + imageServiceBaseurl + "/images",
-//                        HttpMethod.GET, null, new ParameterizedTypeReference<List<Image>>() {
-//                        });
-//
-//        return responseEntityReviews.getBody();
-//    }
     @GetMapping("/images/user/{userEmail}")
     public List<Image> getImagesByUserEmail(@PathVariable String userEmail){
 
@@ -51,8 +37,8 @@ public class ImageController {
     }
     @PostMapping("/images")
     public Image addImage(@RequestParam String userEmail,
-                                       @RequestParam String source,
-                                       @RequestParam String description){
+                          @RequestParam String source,
+                          @RequestParam String description){
 
         //Make a new image
         Image image =

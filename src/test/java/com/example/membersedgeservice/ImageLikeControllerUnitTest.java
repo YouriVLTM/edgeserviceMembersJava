@@ -32,7 +32,8 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -59,11 +60,12 @@ public class ImageLikeControllerUnitTest {
     private ObjectMapper mapper = new ObjectMapper();
 
     /*LIKES*/
-    private ImageLike like1 = new ImageLike(true, "you@mail.com", "1", DigestUtils.sha256Hex("1" + "you@mail.com" + new Date(System.currentTimeMillis())).toString());
-    private ImageLike like2 = new ImageLike(true, "me@mail.com", "1", DigestUtils.sha256Hex("1" + "me@mail.com" + new Date(System.currentTimeMillis())).toString());
-    private ImageLike like3 = new ImageLike(true, "you@mail.com", "2", DigestUtils.sha256Hex("2" + "you@mail.com" + new Date(System.currentTimeMillis())).toString());
-    private ImageLike like4 = new ImageLike(false, "me@mail.com", "2", DigestUtils.sha256Hex("2" + "me@mail.com" + new Date(System.currentTimeMillis())).toString());
-    private ImageLike like5 = new ImageLike(true, "gust@mail.com", "2", DigestUtils.sha256Hex("2" + "gust@mail.com" + new Date(System.currentTimeMillis())).toString());
+
+    private ImageLike like1 = new ImageLike(true, "you@mail.com", "1", "dsdds");
+    private ImageLike like2 = new ImageLike(true, "me@mail.com", "1", "dsdds");
+    private ImageLike like3 = new ImageLike(true, "you@mail.com", "2", "dsdds");
+    private ImageLike like4 = new ImageLike(false, "me@mail.com", "2", "dsdds");
+    private ImageLike like5 = new ImageLike(true, "gust@mail.com", "2", "dsdds");
 
     /*IMAGES*/
     private Image image1 = new Image("AB.png","gust@gmail.com","hond");
@@ -117,11 +119,11 @@ public class ImageLikeControllerUnitTest {
                 .andExpect(jsonPath("$[0].state",is(true)))
                 .andExpect(jsonPath("$[0].userEmail",is("you@mail.com")))
                 .andExpect(jsonPath("$[0].imageKey",is("1")))
-                .andExpect(jsonPath("$[0].likeKey", is("dsfdsf")))
+                .andExpect(jsonPath("$[0].likeKey", is("dsdds")))
                 .andExpect(jsonPath("$[1].state",is(true)))
                 .andExpect(jsonPath("$[1].userEmail",is("me@mail.com")))
                 .andExpect(jsonPath("$[1].imageKey",is("1")))
-                .andExpect(jsonPath("$[1].likeKey", is("dsfdsf")));
+                .andExpect(jsonPath("$[1].likeKey", is("dsdds")));
     }
 
     @Test
@@ -142,9 +144,11 @@ public class ImageLikeControllerUnitTest {
                 .andExpect(jsonPath("$[0].state",is(true)))
                 .andExpect(jsonPath("$[0].userEmail",is("you@mail.com")))
                 .andExpect(jsonPath("$[0].imageKey",is("1")))
+                .andExpect(jsonPath("$[0].likeKey", is("dsdds")))
                 .andExpect(jsonPath("$[1].state",is(true)))
                 .andExpect(jsonPath("$[1].userEmail",is("you@mail.com")))
-                .andExpect(jsonPath("$[1].imageKey",is("2")));
+                .andExpect(jsonPath("$[1].imageKey",is("2")))
+                .andExpect(jsonPath("$[1].likeKey", is("dsdds")));
     }
 
     @Test
@@ -165,9 +169,11 @@ public class ImageLikeControllerUnitTest {
                 .andExpect(jsonPath("$[0].state",is(true)))
                 .andExpect(jsonPath("$[0].userEmail",is("you@mail.com")))
                 .andExpect(jsonPath("$[0].imageKey",is("1")))
+                .andExpect(jsonPath("$[0].likeKey", is("dsdds")))
                 .andExpect(jsonPath("$[1].state",is(true)))
                 .andExpect(jsonPath("$[1].userEmail",is("me@mail.com")))
-                .andExpect(jsonPath("$[1].imageKey",is("1")));
+                .andExpect(jsonPath("$[1].imageKey",is("1")))
+                .andExpect(jsonPath("$[1].likeKey", is("dsdds")));
     }
 
     @Test
@@ -186,6 +192,101 @@ public class ImageLikeControllerUnitTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.state",is(true)))
                 .andExpect(jsonPath("$.userEmail",is("me@mail.com")))
-                .andExpect(jsonPath("$.imageKey",is("1")));
+                .andExpect(jsonPath("$.imageKey",is("1")))
+                .andExpect(jsonPath("$.likeKey", is("dsdds")));
+    }
+
+    @Test
+    public void whenAddImageLike_thenReturnFilledImageUserLikeJson() throws Exception {
+
+        ImageLike like1 = new ImageLike(
+                true,
+                "dqfqdf",
+                "qfdqdf"
+        );
+
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(like1))
+                );
+
+        mockMvc.perform(post("/likes").header("Authorization", "Bearer " + token)
+                .param("userEmail", like1.getUserEmail())
+                .param("imageKey", like1.getImageKey())
+                .param("state", like1.getState().toString())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state",is(true)))
+                .andExpect(jsonPath("$.user.userEmail",is("dqfqdf")))
+                .andExpect(jsonPath("$.image.key",is("qfdqdf")));
+
+    }
+
+    @Test
+    public void whenUpdateImageLike_thenReturnFilledImageUserLikeJson() throws Exception {
+        ImageLike like1 = new ImageLike(
+                true,
+                "dqfqdf",
+                "qfdqdf",
+                "123A"
+        );
+
+        ImageLike updatedLike = new ImageLike(
+                false,
+                "dqfqdf",
+                "qfdqdf",
+                "123A"
+        );
+
+
+        // GET like from key
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/" + like1.getLikeKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(like1))
+                );
+
+        // PUT like from key
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes")))
+                .andExpect(method(HttpMethod.PUT))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(updatedLike))
+                );
+
+        mockMvc.perform(put("/likes").header("Authorization", "Bearer " + token)
+                .param("likeKey", updatedLike.getLikeKey())
+                .param("state", updatedLike.getState().toString())
+                .param("imageKey", updatedLike.getImageKey())
+                .param("userEmail", updatedLike.getUserEmail())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.likeKey",is("123A")))
+                .andExpect(jsonPath("$.state",is(false)))
+                .andExpect(jsonPath("$.user.userEmail",is("dqfqdf")))
+                .andExpect(jsonPath("$.image.key",is("qfdqdf")));
+
+    }
+
+    @Test
+    public void whenDeleteImageLike_thenReturnStatusOk() throws Exception {
+
+        // DELETE like key 123A
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/123A")))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK)
+                );
+
+        mockMvc.perform(delete("/likes/{key}", "123A").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
     }
 }

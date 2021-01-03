@@ -17,6 +17,7 @@ public class FilledImageUserLike {
         this.user = new User(user.getUserEmail());
         this.image = new Image(image.getSource(), image.getUserEmail(), image.getDescription(), image.getKey());
         this.state = like.getState();
+        this.likeKey = like.getLikeKey();
     }
 
     public FilledImageUserLike(Image image, User user, boolean state, String likeKey) {
