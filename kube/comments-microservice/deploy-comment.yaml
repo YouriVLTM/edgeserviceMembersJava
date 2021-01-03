@@ -1,3 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: comment-service-secret
+type: Opaque
+data:
+  MONGODB_HOST: Y29tbWVudC1zZXJ2aWNlLW1vbmdv #comment-service-mongo
+  MONGODB_PORT: MjcwMTc= #27017
+  SERVER_PORT: ODA1Mw== #8053
+  ACTIVEMQ_BROKER_URL: dGNwOi8vcXVldWU6NjE2MTY= #tcp://queue:61616
+---
 apiVersion: v1 # API version
 kind: Service # Type of kubernetes resource
 metadata:
@@ -84,12 +95,24 @@ spec:
             limits:
               cpu: 0.2
               memory: "200Mi"
-          env: # Environment variables supplied to the Pod
+          env:
             - name: MONGODB_HOST
-              value: "comment-service-mongo"
+              valueFrom:
+                secretKeyRef:
+                  name: comment-service-secret
+                  key: MONGODB_HOST
             - name: MONGODB_PORT
-              value: "27017"
+              valueFrom:
+                secretKeyRef:
+                  name: comment-service-secret
+                  key: MONGODB_PORT
             - name: SERVER_PORT
-              value: "8053"
+              valueFrom:
+                secretKeyRef:
+                  name: comment-service-secret
+                  key: SERVER_PORT
             - name: ACTIVEMQ_BROKER_URL
-              value: "tcp://queue:61616"
+              valueFrom:
+                secretKeyRef:
+                  name: comment-service-secret
+                  key: ACTIVEMQ_BROKER_URL
