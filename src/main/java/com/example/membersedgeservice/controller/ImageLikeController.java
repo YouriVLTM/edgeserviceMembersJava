@@ -65,48 +65,48 @@ public class ImageLikeController {
         return responseEntityReviews.getBody();
     }
 
-    @PostMapping(value = "/likes")
-    public FilledImageUserLike addLike(@RequestBody ImageLike like){
-
-        //TODO check if Userkey exist
-        User user = new User(like.getUserEmail());
-
-
-        //TODO check if imageKey exist
-        Image image = new Image();
-        image.setKey(like.getImageKey());
-
-
-        //Make a new like
-        String likeKey = DigestUtils.sha256Hex(like.getImageKey() + like.getUserEmail() + new Date(System.currentTimeMillis()));
-        like.setLikeKey(likeKey);
-        ImageLike newLike =
-                restTemplate.postForObject("http://" + likeServiceBaseUrl + "/likes",
-                        like,ImageLike.class);
-
-        return new FilledImageUserLike(image, user, newLike);
-    }
-
 //    @PostMapping(value = "/likes")
-//    public FilledImageUserLike addLike(@RequestParam String userEmail, @RequestParam String imageKey, @RequestParam boolean state){
+//    public FilledImageUserLike addLike(@RequestBody ImageLike like){
 //
 //        //TODO check if Userkey exist
-//        User user = new User(userEmail);
+//        User user = new User(like.getUserEmail());
 //
 //
 //        //TODO check if imageKey exist
 //        Image image = new Image();
-//        image.setKey(imageKey);
+//        image.setKey(like.getImageKey());
 //
 //
 //        //Make a new like
-//        String likeKey = DigestUtils.sha256Hex(imageKey + userEmail + new Date(System.currentTimeMillis()));
-//        ImageLike like =
+//        String likeKey = DigestUtils.sha256Hex(like.getImageKey() + like.getUserEmail() + new Date(System.currentTimeMillis()));
+//        like.setLikeKey(likeKey);
+//        ImageLike newLike =
 //                restTemplate.postForObject("http://" + likeServiceBaseUrl + "/likes",
-//                        new ImageLike(state, userEmail, imageKey, likeKey),ImageLike.class);
+//                        like,ImageLike.class);
 //
-//        return new FilledImageUserLike(image, user, like);
+//        return new FilledImageUserLike(image, user, newLike);
 //    }
+
+    @PostMapping(value = "/likes")
+    public FilledImageUserLike addLike(@RequestParam String userEmail, @RequestParam String imageKey, @RequestParam boolean state){
+
+        //TODO check if Userkey exist
+        User user = new User(userEmail);
+
+
+        //TODO check if imageKey exist
+        Image image = new Image();
+        image.setKey(imageKey);
+
+
+        //Make a new like
+        String likeKey = DigestUtils.sha256Hex(imageKey + userEmail + new Date(System.currentTimeMillis()));
+        ImageLike like =
+                restTemplate.postForObject("http://" + likeServiceBaseUrl + "/likes",
+                        new ImageLike(state, userEmail, imageKey, likeKey),ImageLike.class);
+
+        return new FilledImageUserLike(image, user, like);
+    }
 
     @PutMapping("/likes")
     public FilledImageUserLike updateLike(@RequestParam String likeKey,
@@ -125,10 +125,11 @@ public class ImageLikeController {
         ImageLike retrievedLike = responseEntityReview.getBody();
 
         //TODO get user
-        User user = new User();
+        User user = new User(like.getUserEmail());
 
         //TODO get Images
         Image image = new Image();
+        image.setKey(like.getImageKey());
 
 
         return new FilledImageUserLike(image, user, retrievedLike);
