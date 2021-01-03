@@ -26,8 +26,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -43,6 +45,9 @@ public class CommentControllerUnitTest {
 
     @Value("${userservice.baseurl}")
     private String userServiceBaseUrl;
+
+    @Value("${imageservice.baseurl}")
+    private String imageServiceBaseUrl;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -66,13 +71,6 @@ public class CommentControllerUnitTest {
 
     );
 
-    private Comment comment2 = new Comment(
-            "Comment2",
-            "Dat is speciaal.",
-            "com2@hotmail.com",
-            "123B"
-    );
-
     private Comment comment3 = new Comment(
             "Comment3",
             "Dat is speciaal.",
@@ -80,22 +78,9 @@ public class CommentControllerUnitTest {
             "123A"
     );
 
-    private Comment comment4 = new Comment(
-            "Comment4",
-            "Dat is speciaal.",
-            "com4@hotmail.com",
-            "123B"
-    );
-
     /*IMAGES*/
     private Image image1 = new Image("AB.png","gust@gmail.com","hond");
-    private Image image2 = new Image("ABC.png","you@gmail.com","kat");
-    private Image image3 = new Image("ABCD.png","me@gmail.com","konijn");
-    private Image image4 = new Image("ABCDE.png","you@gmail.com","vis");
-
-
     private List<Comment> allcommentFromImage123A = Arrays.asList(comment1, comment3);
-    private List<Comment> allcommentFromImage123B = Arrays.asList(comment2, comment4);
 
 
     @BeforeEach
@@ -104,9 +89,6 @@ public class CommentControllerUnitTest {
 
         /*Set Images keys*/
         image1.setKey("123A");
-        image2.setKey("123B");
-        image3.setKey("123C");
-        image4.setKey("123D");
 
         //login AUTHENTICATION
         JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
@@ -131,9 +113,82 @@ public class CommentControllerUnitTest {
     }
 
     @Test
-    public void whenGetCommentsByImagesKey_thenReturnAllCommentsJson() throws Exception{
+    public void whenGetCommentsByUserEmail_thenReturnAllCommentsJson() throws Exception{
+        //set value
+        ImgBoardUser user = new ImgBoardUser();
+        user.setEmail(comment1.getUserEmail());
+        // GET UserEmail
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
 
-        // GET all reviews from User 1
+        //get comments
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/users/" + user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(allcommentFromImage123A))
+                );
+
+        mockMvc.perform(get("/comments/users/{userEmail}", user.getEmail()).header("Authorization", "Bearer " + token))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title",is("Comment1")))
+                .andExpect(jsonPath("$[0].description",is("Dat is mooi.")))
+                .andExpect(jsonPath("$[0].userEmail",is("com1@hotmail.com")))
+                .andExpect(jsonPath("$[0].imageKey",is("123A")))
+                .andExpect(jsonPath("$[1].title",is("Comment3")))
+                .andExpect(jsonPath("$[1].description",is("Dat is speciaal.")))
+                .andExpect(jsonPath("$[1].userEmail",is("com3@hotmail.com")))
+                .andExpect(jsonPath("$[1].imageKey",is("123A")));
+    }
+
+    @Test
+    public void whenGetCommentsByBADUserEmail_thenReturnUserBadRequest() throws Exception{
+        //set value
+        ImgBoardUser user = new ImgBoardUser();
+        user.setEmail(comment1.getUserEmail());
+        // GET UserEmail Null
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString("User not found"))
+                );
+
+        //get comments
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/users/" + user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(allcommentFromImage123A))
+                );
+
+        mockMvc.perform(get("/comments/users/{userEmail}", user.getEmail()).header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"User Not Found\"", result.getResolvedException().getMessage()));
+    }
+
+    @Test
+    public void whenGetCommentsByImagesKey_thenReturnAllCommentsJson() throws Exception{
+        // GET IMAGES
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseUrl + "/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(image1))
+                );
+
+        //get comments
         mockServer.expect(ExpectedCount.once(),
                 requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/images/123A")))
                 .andExpect(method(HttpMethod.GET))
@@ -155,16 +210,65 @@ public class CommentControllerUnitTest {
                 .andExpect(jsonPath("$[1].userEmail",is("com3@hotmail.com")))
                 .andExpect(jsonPath("$[1].imageKey",is("123A")));
     }
+
+    @Test
+    public void whenGetCommentsByBadImageKey_thenReturnBadRequest() throws Exception{
+        // GET IMAGES
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseUrl + "/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString("Image key not found"))
+                );
+
+        //get comments
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/images/123A")))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(allcommentFromImage123A))
+                );
+
+        mockMvc.perform(get("/comments/images/{imagekey}", "123A").header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"ImageKey Not Found\"", result.getResolvedException().getMessage()));
+
+    }
+
+
     @Test
     public void whenAddComment_thenReturnFilledImageUserCommentJson() throws Exception {
+        //set value
+        ImgBoardUser user = new ImgBoardUser();
+        user.setEmail(comment1.getUserEmail());
 
         Comment newComment1 = new Comment(
-                "Comment1",
+                "newComment1",
                 "Dat is mooi.",
-                "com1@hotmail.com",
-                "123A"
+                user.getEmail(),
+                image1.getKey()
         );
 
+        // GET UserEmail
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+        //GET IMAGES
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseUrl + "/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(image1))
+                );
+        //POST COMMENT
         mockServer.expect(ExpectedCount.once(),
                 requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
                 .andExpect(method(HttpMethod.POST))
@@ -172,25 +276,6 @@ public class CommentControllerUnitTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(mapper.writeValueAsString(newComment1))
                 );
-
-       /* //TODO get images
-        mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(newComment1))
-                );
-
-
-        //TODO get users
-        mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(newComment1))
-                );*/
 
         mockMvc.perform(post("/comments").header("Authorization", "Bearer " + token)
                 .param("userEmail", newComment1.getUserEmail())
@@ -200,38 +285,160 @@ public class CommentControllerUnitTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title",is("Comment1")))
+                .andExpect(jsonPath("$.title",is("newComment1")))
                 .andExpect(jsonPath("$.description",is("Dat is mooi.")))
-                .andExpect(jsonPath("$.user.userEmail",is("com1@hotmail.com")))
-                .andExpect(jsonPath("$.image.key",is("123A")));
+                .andExpect(jsonPath("$.user.email",is(user.getEmail())))
+                .andExpect(jsonPath("$.image.key",is(image1.getKey())));
+    }
+
+    @Test
+    public void whenAddCommentByBadUserEmail_thenReturnBadRequest() throws Exception {
+        //set value
+        ImgBoardUser user = new ImgBoardUser();
+        user.setEmail(comment1.getUserEmail());
+
+        Comment newComment1 = new Comment(
+                "newComment1",
+                "Dat is mooi.",
+                user.getEmail(),
+                image1.getKey()
+        );
+
+        // GET UserEmail
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString("n"))
+                );
+
+        //GET IMAGES
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseUrl + "/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(image1))
+                );
+        //POST COMMENT
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(newComment1))
+                );
+
+        mockMvc.perform(post("/comments").header("Authorization", "Bearer " + token)
+                .param("userEmail", newComment1.getUserEmail())
+                .param("imageKey", newComment1.getImageKey())
+                .param("title", newComment1.getTitle())
+                .param("description", newComment1.getDescription())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"User Not Found\"", result.getResolvedException().getMessage()));
 
     }
 
     @Test
+    public void whenAddCommentByBadImageKey_thenReturnBadRequest() throws Exception {
+        //set value
+        ImgBoardUser user = new ImgBoardUser();
+        user.setEmail(comment1.getUserEmail());
+
+        Comment newComment1 = new Comment(
+                "newComment1",
+                "Dat is mooi.",
+                user.getEmail(),
+                image1.getKey()
+        );
+
+        // GET UserEmail
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+        //GET IMAGES
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseUrl + "/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString("n"))
+                );
+        //POST COMMENT
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(newComment1))
+                );
+
+        mockMvc.perform(post("/comments").header("Authorization", "Bearer " + token)
+                .param("userEmail", newComment1.getUserEmail())
+                .param("imageKey", newComment1.getImageKey())
+                .param("title", newComment1.getTitle())
+                .param("description", newComment1.getDescription())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"ImageKey Not Found\"", result.getResolvedException().getMessage()));
+
+    }
+
+
+    @Test
     public void whenUpdateComment_thenReturnFilledImageUserCommentJson() throws Exception {
+        //set value
+        ImgBoardUser user = new ImgBoardUser();
+        user.setEmail(comment1.getUserEmail());
+
         Comment newComment1 = new Comment(
                 "Comment1",
                 "Dat is mooi.",
                 "com1@hotmail.com",
-                "123A",
+                "123AAA",
                 "com123A"
         );
 
         Comment updateComment1 = new Comment(
                 "upComment1",
                 "upDat is mooi.",
-                "com1@hotmail.com",
-                "123A",
+                user.getEmail(),
+                image1.getKey(),
                 "com123A"
         );
 
         // GET comment from key
         mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/"+ newComment1.getKey())))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(mapper.writeValueAsString(newComment1))
+                );
+
+        // GET UserEmail
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+        //GET IMAGES
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseUrl + "/images/"+"123AAA")))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(image1))
                 );
 
         // PUT comment from key
@@ -252,10 +459,79 @@ public class CommentControllerUnitTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title",is("upComment1")))
                 .andExpect(jsonPath("$.description",is("upDat is mooi.")))
-                .andExpect(jsonPath("$.user.userEmail",is("com1@hotmail.com")))
-                .andExpect(jsonPath("$.image.key",is("123A")));
+                .andExpect(jsonPath("$.user.email",is(user.getEmail())))
+                .andExpect(jsonPath("$.image.key",is(image1.getKey())));
 
     }
+
+    @Test
+    public void whenUpdateCommentBadCommentKey_thenReturnBadRequest() throws Exception {
+        //set value
+        ImgBoardUser user = new ImgBoardUser();
+        user.setEmail(comment1.getUserEmail());
+
+        Comment newComment1 = new Comment(
+                "Comment1",
+                "Dat is mooi.",
+                "com1@hotmail.com",
+                "123AAA",
+                "com123A"
+        );
+
+        Comment updateComment1 = new Comment(
+                "upComment1",
+                "upDat is mooi.",
+                user.getEmail(),
+                image1.getKey(),
+                "com123A"
+        );
+
+        // GET comment from key
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/"+ newComment1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString("n"))
+                );
+
+        // GET UserEmail
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(user))
+                );
+
+        //GET IMAGES
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseUrl + "/images/"+"123AAA")))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(image1))
+                );
+
+        // PUT comment from key
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
+                .andExpect(method(HttpMethod.PUT))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(updateComment1))
+                );
+
+        mockMvc.perform(put("/comments").header("Authorization", "Bearer " + token)
+                .param("commentKey", updateComment1.getKey())
+                .param("title", updateComment1.getTitle())
+                .param("description", updateComment1.getDescription())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals("400 BAD_REQUEST \"Comment key Not Found\"", result.getResolvedException().getMessage()));
+
+    }
+
 
     @Test
     public void whenDeleteComment_thenReturnStatusOk() throws Exception {

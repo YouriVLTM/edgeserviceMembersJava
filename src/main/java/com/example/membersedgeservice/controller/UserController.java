@@ -3,7 +3,6 @@ package com.example.membersedgeservice.controller;
 import com.example.membersedgeservice.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +17,7 @@ import java.util.List;
 public class UserController {
     @Autowired private ImageLikeController controllerImageLike;
     @Autowired private ImageController imageController;
+    @Autowired private CommentController commentController;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -39,15 +39,9 @@ public class UserController {
         @PostMapping(value ="/user")
     public ImgBoardUser register(@RequestBody ImgBoardUser userRequest){
 
-        //Make a new comment
-        //ImgBoardUser user = restTemplate.postForObject("http://" + userServiceBaseUrl + "/login",
-        //ImgBoardUser user = restTemplate.postForObject("http://localhost:8051/user",
         ImgBoardUser user = restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
                 userRequest,ImgBoardUser.class);
         return user;
-        //System.out.println("email user :" + user.getEmail());
-        //return user;
-        //
     }
     @PutMapping("/user")
     public ImgBoardUser updateUserPassword(@RequestBody ImgBoardUser updateUser,@RequestHeader(name="Authorization") String token) {
@@ -70,7 +64,14 @@ public class UserController {
         String jwtToken = token.substring(7);
         String emailToken = jwtTokenUtil.getUsernameFromToken(jwtToken);
         if(emailToken.equalsIgnoreCase(email)){
-            //TODO delete evryting from comment
+            List<Comment> comments=commentController.getCommentsByUserEmail(email);
+            List<Comment> commentsList= comments;
+            if(commentsList !=null) {
+                for (int i = 0; i < commentsList.size(); i++) {
+                    commentController.deleteComment(commentsList.get(i).getKey());
+                }
+            }
+
             List<ImageLike> imagesLikesUser=controllerImageLike.getlikesByUserEmail(email);
             if(imagesLikesUser !=null) {
                 for (int i = 0; i < imagesLikesUser.size(); i++) {

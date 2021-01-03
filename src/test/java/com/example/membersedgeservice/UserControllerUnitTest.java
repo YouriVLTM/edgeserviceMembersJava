@@ -47,6 +47,8 @@ public class UserControllerUnitTest {
     private String likeServiceBaseUrl;
     @Value("${imageservice.baseurl}")
     private String imageServiceBaseurl;
+    @Value("${commentservice.baseurl}")
+    private String commentServiceBaseUrl;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -248,6 +250,12 @@ public class UserControllerUnitTest {
                         .body(mapper.writeValueAsString(user))
                 );
         mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/users/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                );
+        mockServer.expect(ExpectedCount.once(),
                 requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/user/"+user.getEmail())))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
@@ -272,6 +280,11 @@ public class UserControllerUnitTest {
     }
     @Test
     public void whenDeleteUser_thendeleteEverythingAndReturnStatus() throws Exception {
+
+        Comment comment1 = new Comment("Comment1","Dat is mooi.", "com1@hotmail.com","123A", "com123A");
+        List<Comment> commentList= new ArrayList<Comment>();
+        commentList.add(comment1);
+
         ImageLike like1 = new ImageLike(true, "r0703028@student.thomasmore.be", "1");
         List<ImageLike> likesList= new ArrayList<ImageLike>();
         likesList.add(like1);
@@ -292,6 +305,21 @@ public class UserControllerUnitTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(mapper.writeValueAsString(user))
                 );
+        //comment
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/users/"+user.getEmail())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(commentList))
+                );
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/"+comment1.getKey())))//
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK));
+        //end comment
+
+
         mockServer.expect(ExpectedCount.once(),
                 requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/user/"+user.getEmail())))
                 .andExpect(method(HttpMethod.GET))
