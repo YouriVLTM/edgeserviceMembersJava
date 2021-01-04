@@ -20,12 +20,12 @@ public class FilledImageUserLike {
         this.likeKey = like.getLikeKey();
     }
 
-    public FilledImageUserLike(Image image, User user, boolean state, String likeKey) {
-        this.image = image;
-        this.user = user;
-        this.state = state;
-        this.likeKey = likeKey;
-    }
+//    public FilledImageUserLike(Image image, User user, boolean state, String likeKey) {
+//        this.image = image;
+//        this.user = user;
+//        this.state = state;
+//        this.likeKey = likeKey;
+//    }
 
     public User getUser() {
         return user;

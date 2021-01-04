@@ -13,12 +13,12 @@ public class ImageLike {
 
     public ImageLike(){}
 
-    public ImageLike(String userEmail, String imageKey, ImageLike newLike) {
-        this.userEmail = userEmail;
-        this.imageKey = imageKey;
-        this.state = newLike.state;
-        this.likeKey = DigestUtils.sha256Hex(imageKey + userEmail + new Date(System.currentTimeMillis()));
-    }
+//    public ImageLike(String userEmail, String imageKey, ImageLike newLike) {
+//        this.userEmail = userEmail;
+//        this.imageKey = imageKey;
+//        this.state = newLike.state;
+//        this.likeKey = DigestUtils.sha256Hex(imageKey + userEmail + new Date(System.currentTimeMillis()));
+//    }
     public ImageLike(boolean state, String userEmail, String imageKey) {
         this.state = state;
         this.userEmail = userEmail;
