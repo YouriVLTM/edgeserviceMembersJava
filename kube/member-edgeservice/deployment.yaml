@@ -42,12 +42,12 @@ spec:
               memory: "200Mi"
           env:                    # Environment variables supplied to the Pod
             - name: USER_SERVICE_BASEURL
-                value: "user-service-server:8051"
+              value: "user-service-server:8051"
             - name: IMAGE_INFO_SERVICE_BASEURL
-                value: "image-service-server:8052"
+              value: "image-service-server:8052"
             - name: COMMENT_SERVICE_BASEURL
-                value: "comment-service-server:8053"
+              value: "comment-service-server:8053"
             - name: LIKE_INFO_SERVICE_BASEURL
-                value: "like-service-server:8054"
+              value: "like-service-server:8054"
 
 
