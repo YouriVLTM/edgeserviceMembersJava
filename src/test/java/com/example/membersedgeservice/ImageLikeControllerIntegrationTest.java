@@ -1,10 +1,15 @@
 //package com.example.membersedgeservice;
 //
 //import com.example.membersedgeservice.config.JwtTokenUtil;
+
 //import com.example.membersedgeservice.model.Image;
 //import com.example.membersedgeservice.model.ImageLike;
 //import com.example.membersedgeservice.model.ImgBoardUser;
 //import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.example.membersedgeservice.model.*;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.jayway.jsonpath.JsonPath;
+//import org.junit.jupiter.api.AfterEach;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
 //import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +20,11 @@
 //import org.springframework.http.HttpStatus;
 //import org.springframework.http.MediaType;
 //import org.springframework.security.core.userdetails.User;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.test.web.client.ExpectedCount;
+//import org.springframework.test.web.client.MockRestServiceServer;
+//import org.springframework.test.web.servlet.MockMvc;
+//import org.springframework.test.web.servlet.MvcResult;
 //import org.springframework.test.web.client.ExpectedCount;
 //import org.springframework.test.web.client.MockRestServiceServer;
 //import org.springframework.test.web.servlet.MockMvc;
@@ -43,6 +53,9 @@
 //    @Value("${userservice.baseurl}")
 //    private String userServiceBaseUrl;
 //
+//    @Value("${imageservice.baseurl}")
+//    private String imageServiceBaseUrl;
+//
 //    @Autowired
 //    private RestTemplate restTemplate;
 //
@@ -59,44 +72,60 @@
 //    private ImageLike like1 = new ImageLike(
 //            true,
 //            "user1",
-//            "image1",
+//            "",
 //            "123A"
 //    );
 //
 //    private ImageLike like2 = new ImageLike(
 //            true,
 //            "user2",
-//            "image2",
+//            "",
 //            "123B"
 //    );
 //
 //    private ImageLike like3 = new ImageLike(
 //            false,
 //            "user3",
-//            "image1",
+//            "",
 //            "123C"
 //    );
 //
 //    private ImageLike like4 = new ImageLike(
 //            false,
 //            "user4",
-//            "image2",
+//            "",
 //            "123D"
 //    );
 //
 //    private ImageLike like5 = new ImageLike(
 //            true,
 //            "user4",
-//            "image1",
+//            "",
 //            "123E"
 //    );
 //
 //    private ImageLike like6 = new ImageLike(
 //            true,
 //            "user5",
-//            "image5",
+//            "",
 //            "123F"
 //    );
+//
+//    private ImageLike updateLike = new ImageLike(
+//            false,
+//            "user5",
+//            "",
+//            "123F"
+//    );
+//
+//    private ImageLike newLike = new ImageLike(
+//            true,
+//            "user5",
+//            "",
+//            "123G"
+//    );
+//
+//
 //
 //    /*IMAGES*/
 //    private Image image1 = new Image("AB.png","gust@gmail.com","hond");
@@ -113,33 +142,129 @@
 //
 //    @BeforeEach
 //    public void initializeMockserver() throws Exception{
-//        mockServer = MockRestServiceServer.createServer(restTemplate);
-//
-//        /*Set Images keys*/
-//        image1.setKey("image1");
-//        image2.setKey("image2");
-//        image3.setKey("image3");
-//        image4.setKey("image4");
-//
 //        //login AUTHENTICATION
 //        JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
-//        user = new ImgBoardUser(
-//                "testF",
-//                "testL",
-//                "test@hotmail.com",
-//                "test2"
+////        user = new ImgBoardUser(
+////                "testF",
+////                "testL",
+////                "test@hotmail.com",
+////                "test2"
+////        );
+//        JwtRequest login1 = new JwtRequest(
+//                "r0703028@student.thomasmore.be",
+//                "test"
 //        );
-//        token = jwtTokenUtil.generateToken(new User(user.getEmail(), user.getPassword(),
-//                new ArrayList<>()));
 //
-//        mockServer.expect(ExpectedCount.manyTimes(),
-//                requestTo(new URI("http://" + userServiceBaseUrl + "/user/"+user.getEmail())))
-//                .andExpect(method(HttpMethod.GET))
-//                .andRespond(withStatus(HttpStatus.OK)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(mapper.writeValueAsString(user))
-//                );
+//        ImgBoardUser user = new ImgBoardUser("Robin","Thoelen","r0703028@student.thomasmore.be",new BCryptPasswordEncoder().encode("test") );
 //
+//
+//        MvcResult result = mockMvc.perform(post("/login")
+//                .content(mapper.writeValueAsString(login1))
+//                .contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isOk())
+//                .andReturn();
+//
+//        String response = result.getResponse().getContentAsString();
+//        token = JsonPath.parse(response).read("$.token").toString();
+//    }
+//
+//    @BeforeEach
+//    public void beforeTests() {
+//        // Save All Images
+//        try{
+//            image1 =restTemplate.postForObject("http://" + imageServiceBaseUrl + "/images",
+//                    image1,Image.class);
+//        } catch (Exception e) {
+//        }
+//
+//        try{
+//            image2 =restTemplate.postForObject("http://" + imageServiceBaseUrl + "/images",
+//                    image2,Image.class);
+//        } catch (Exception e) {
+//        }
+//
+//        try{
+//            image3 =restTemplate.postForObject("http://" + imageServiceBaseUrl + "/images",
+//                    image3,Image.class);
+//        } catch (Exception e) {
+//        }
+//
+//        try{
+//            image4 =restTemplate.postForObject("http://" + imageServiceBaseUrl + "/images",
+//                    image4,Image.class);
+//        } catch (Exception e) {
+//        }
+//
+//        // link to like
+//        like1.setImageKey(image1.getKey());
+//        like2.setImageKey(image2.getKey());
+//        like3.setImageKey(image1.getKey());
+//        like4.setImageKey(image2.getKey());
+//        like5.setImageKey(image1.getKey());
+//        like6.setImageKey(image4.getKey());
+//        updateLike.setImageKey(image4.getKey());
+//        newLike.setImageKey(image1.getKey());
+//
+//        // SAVE ALL likes
+//        try{
+//            like1 =restTemplate.postForObject("http://" + likeServiceBaseUrl + "/likes",
+//                    like1, ImageLike.class);
+//        } catch (Exception e) {
+//        }
+//
+//        try{
+//            like2 =restTemplate.postForObject("http://" + likeServiceBaseUrl + "/likes",
+//                    like2, ImageLike.class);
+//        } catch (Exception e) {
+//        }
+//
+//        try{
+//            like3 =restTemplate.postForObject("http://" + likeServiceBaseUrl + "/likes",
+//                    like3, ImageLike.class);
+//        } catch (Exception e) {
+//        }
+//
+//        try{
+//            updateLike =restTemplate.postForObject("http://" + likeServiceBaseUrl + "/likes",
+//                    updateLike, ImageLike.class);
+//        } catch (Exception e) {
+//        }
+//
+//    }
+//
+//    @AfterEach
+//    public void afterTests() {
+//        // DELETE ALL IMAGES
+//        try{
+//            restTemplate.delete("http://" + imageServiceBaseUrl + "/images/" + image1.getKey());
+//        }catch(Exception e){
+//        }
+//        try{
+//            restTemplate.delete("http://" + imageServiceBaseUrl + "/images/" + image2.getKey());
+//        }catch(Exception e){
+//        }
+//
+//        // DELETE ALL COMMENTS
+//        try{
+//            restTemplate.delete("http://" + likeServiceBaseUrl + "/comments/" + like1.getLikeKey());
+//        }catch(Exception e){
+//        }
+//        try{
+//            restTemplate.delete("http://" + likeServiceBaseUrl + "/comments/" + like2.getLikeKey());
+//        }catch(Exception e){
+//        }
+//        try{
+//            restTemplate.delete("http://" + likeServiceBaseUrl + "/comments/" + like3.getLikeKey());
+//        }catch(Exception e){
+//        }
+//        try{
+//            restTemplate.delete("http://" + likeServiceBaseUrl + "/comments/" + like4.getLikeKey());
+//        }catch(Exception e){
+//        }
+//        try{
+//            restTemplate.delete("http://" + likeServiceBaseUrl + "/comments/" + updateLike.getLikeKey());
+//        }catch(Exception e){
+//        }
 //
 //    }
 //
