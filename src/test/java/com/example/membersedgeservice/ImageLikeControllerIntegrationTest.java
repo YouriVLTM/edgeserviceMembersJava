@@ -1,6 +1,11 @@
 //package com.example.membersedgeservice;
 //
 //import com.example.membersedgeservice.config.JwtTokenUtil;
+
+//import com.example.membersedgeservice.model.Image;
+//import com.example.membersedgeservice.model.ImageLike;
+//import com.example.membersedgeservice.model.ImgBoardUser;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.example.membersedgeservice.model.*;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.jayway.jsonpath.JsonPath;
@@ -20,6 +25,9 @@
 //import org.springframework.test.web.client.MockRestServiceServer;
 //import org.springframework.test.web.servlet.MockMvc;
 //import org.springframework.test.web.servlet.MvcResult;
+//import org.springframework.test.web.client.ExpectedCount;
+//import org.springframework.test.web.client.MockRestServiceServer;
+//import org.springframework.test.web.servlet.MockMvc;
 //import org.springframework.web.client.RestTemplate;
 //
 //import java.net.URI;
