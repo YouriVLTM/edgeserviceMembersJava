@@ -280,18 +280,17 @@ public class UserControllerUnitTest {
     }
     @Test
     public void whenDeleteUser_thendeleteEverythingAndReturnStatus() throws Exception {
-
-        Comment comment1 = new Comment("Comment1","Dat is mooi.", "com1@hotmail.com","123A", "com123A");
-        List<Comment> commentList= new ArrayList<Comment>();
-        commentList.add(comment1);
-
-        ImageLike like1 = new ImageLike(true, "r0703028@student.thomasmore.be", "1");
-        List<ImageLike> likesList= new ArrayList<ImageLike>();
-        likesList.add(like1);
-
         Image image1= new Image("testSource", "r0703028@student.thomasmore.be", "test");
         List<Image> imageList= new ArrayList<Image>();
         imageList.add(image1);
+
+        Comment comment1 = new Comment("Comment1","Dat is mooi.", "com1@hotmail.com",image1.getKey(), "com123A");
+        List<Comment> commentList= new ArrayList<Comment>();
+        commentList.add(comment1);
+
+        ImageLike like1 = new ImageLike(true, "r0703028@student.thomasmore.be", image1.getKey());
+        List<ImageLike> likesList= new ArrayList<ImageLike>();
+        likesList.add(like1);
 
         JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
         ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
@@ -339,6 +338,31 @@ public class UserControllerUnitTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(mapper.writeValueAsString(imageList))
                 );
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(image1))
+                );
+
+        //comment
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                );
+        //end comment
+        //like
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/image/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                );
+        //end like
+
         mockServer.expect(ExpectedCount.once(),
                 requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+image1.getKey())))
                 .andExpect(method(HttpMethod.DELETE))
