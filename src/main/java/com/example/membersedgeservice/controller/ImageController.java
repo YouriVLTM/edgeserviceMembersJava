@@ -1,9 +1,6 @@
 package com.example.membersedgeservice.controller;
 
-import com.example.membersedgeservice.model.FilledImageUserLike;
-import com.example.membersedgeservice.model.Image;
-import com.example.membersedgeservice.model.ImageLike;
-import com.example.membersedgeservice.model.User;
+import com.example.membersedgeservice.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -18,6 +15,8 @@ import java.util.List;
 public class ImageController {
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired private ImageLikeController imageLikeController;
+    @Autowired private CommentController commentController;
 
     @Value("${imageservice.baseurl}")
     private String imageServiceBaseurl;
@@ -71,7 +70,18 @@ public class ImageController {
     }
     @DeleteMapping("/images/{key}")
     public ResponseEntity deleteImage(@PathVariable String key){
-
+        List<Comment> commentList = commentController.getCommentsByImageKey(key);
+        if(commentList !=null) {
+            commentList.forEach(comment -> {
+                commentController.deleteComment(comment.getKey());
+            });
+        }
+        List<ImageLike> imageLikeList = imageLikeController.getLikesByImageKey(key);
+        if(imageLikeList !=null) {
+            imageLikeList.forEach(imageLike -> {
+                imageLikeController.deleteLike(imageLike.getLikeKey());
+            });
+        }
         restTemplate.delete("http://" + imageServiceBaseurl + "/images/" + key);
 
         return ResponseEntity.ok().build();
