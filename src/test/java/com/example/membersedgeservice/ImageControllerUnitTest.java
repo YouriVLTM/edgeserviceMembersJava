@@ -2,7 +2,9 @@ package com.example.membersedgeservice;
 
 
 import com.example.membersedgeservice.config.JwtTokenUtil;
+import com.example.membersedgeservice.model.Comment;
 import com.example.membersedgeservice.model.Image;
+import com.example.membersedgeservice.model.ImageLike;
 import com.example.membersedgeservice.model.ImgBoardUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +47,10 @@ public class ImageControllerUnitTest {
 
     @Value("${userservice.baseurl}")
     private String userServiceBaseUrl;
+    @Value("${commentservice.baseurl}")
+    private String commentServiceBaseUrl;
+    @Value("${likeservice.baseurl}")
+    private String likeServiceBaseUrl;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -195,9 +201,57 @@ public class ImageControllerUnitTest {
 
     }
     @Test
-    public void whenDeleteImage_thenReturnStatusOk() throws Exception {
+    public void whenDeleteImage_thenDeleteAllAndReturnStatusOk() throws Exception {
+        Image image1= new Image("testSource", "r0703028@student.thomasmore.be", "test", "ABC123");
+        List<Image> imageList= new ArrayList<Image>();
+        imageList.add(image1);
 
-        // DELETE comment key com123A
+        Comment comment1 = new Comment("Comment1","Dat is mooi.", "com1@hotmail.com","ABC123", "com123A");
+        List<Comment> commentList= new ArrayList<Comment>();
+        commentList.add(comment1);
+
+        ImageLike like1 = new ImageLike(true, "r0703028@student.thomasmore.be", "ABC123");
+        List<ImageLike> likesList= new ArrayList<ImageLike>();
+        likesList.add(like1);
+
+
+        mockServer.expect(ExpectedCount.manyTimes(),
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(image1))
+                );
+        //comment
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/images/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(commentList))
+                );
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments/"+comment1.getKey())))//
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK));
+        //end comment
+        //like
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/image/"+image1.getKey())))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(likesList))
+                );
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + likeServiceBaseUrl + "/likes/"+like1.getLikeKey())))//
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK));
+        //end like
+
+
+
+        // DELETE image key com123A
         mockServer.expect(ExpectedCount.once(),
                 requestTo(new URI("http://" + imageServiceBaseurl + "/images/ABC123")))
                 .andExpect(method(HttpMethod.DELETE))
