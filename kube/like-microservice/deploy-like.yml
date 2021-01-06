@@ -8,7 +8,7 @@ data:
   MYSQL_DB_USER: bXlzcWwxMjM=
   MYSQL_DB_PASSWORD: bXlzcWwxMjM=
   MYSQL_ROOT_PASSWORD: YWJjMTIz
-  MYSQl_PORT: MzMwNg== #3306
+  MYSQL_PORT: MzMwNg== #3306
   SERVER_PORT: ODA1NA== #8054
 ---
 apiVersion: v1                    # API version
