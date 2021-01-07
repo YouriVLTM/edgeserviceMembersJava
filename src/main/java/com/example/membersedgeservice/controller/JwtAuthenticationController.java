@@ -24,7 +24,7 @@ import com.example.membersedgeservice.model.JwtRequest;
 import com.example.membersedgeservice.model.JwtResponse;
 
 @RestController
-@CrossOrigin
+//@CrossOrigin
 public class JwtAuthenticationController {
 
     @Autowired
