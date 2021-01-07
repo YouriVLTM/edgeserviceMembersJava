@@ -70,6 +70,7 @@ public class ImageControllerUnitTest {
     private Image image4 = new Image("ABCDE.png","you@gmail.com","vis","ABC1236");
 
     private List<Image> allImageFromEmailYou = Arrays.asList(image2, image4);
+    private List<Image> allImages = Arrays.asList(image1, image2,image3,  image4);
 
     @BeforeEach
     public void initializeMockserver() throws Exception{
@@ -101,6 +102,36 @@ public class ImageControllerUnitTest {
                 );
 
 
+    }
+    @Test
+    public void whenGetImages_thenReturnAllImagesJson() throws Exception{
+
+
+        // GET all Images from User 1
+        mockServer.expect(ExpectedCount.once(),
+                requestTo(new URI("http://" + imageServiceBaseurl + "/images")))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(allImages))
+                );
+
+        mockMvc.perform(get("/images").header("Authorization", "Bearer " + token))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(4)))
+                .andExpect(jsonPath("$[0].source",is("AB.png")))
+                .andExpect(jsonPath("$[0].description",is("hond")))
+                .andExpect(jsonPath("$[0].userEmail",is("gust@gmail.com")))
+                .andExpect(jsonPath("$[1].source",is("ABC.png")))
+                .andExpect(jsonPath("$[1].description",is("kat")))
+                .andExpect(jsonPath("$[1].userEmail",is("you@gmail.com")))
+                .andExpect(jsonPath("$[2].source",is("ABCD.png")))
+                .andExpect(jsonPath("$[2].description",is("konijn")))
+                .andExpect(jsonPath("$[2].userEmail",is("me@gmail.com")))
+                .andExpect(jsonPath("$[3].source",is("ABCDE.png")))
+                .andExpect(jsonPath("$[3].description",is("vis")))
+                .andExpect(jsonPath("$[3].userEmail",is("you@gmail.com")));
     }
     @Test
     public void whenGetImagesByUserEmail_thenReturnAllImagesJson() throws Exception{

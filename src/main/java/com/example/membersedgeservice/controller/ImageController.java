@@ -21,6 +21,18 @@ public class ImageController {
     @Value("${imageservice.baseurl}")
     private String imageServiceBaseurl;
 
+
+
+    @GetMapping("/images")
+    public List<Image> getImages(){
+
+        ResponseEntity<List<Image>> responseEntityReviews =
+                restTemplate.exchange("http://" + imageServiceBaseurl + "/images",
+                        HttpMethod.GET, null, new ParameterizedTypeReference<List<Image>>() {
+                        });
+
+        return responseEntityReviews.getBody();
+    }
     @GetMapping("/images/user/{userEmail}")
     public List<Image> getImagesByUserEmail(@PathVariable String userEmail){
 
