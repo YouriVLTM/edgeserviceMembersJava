@@ -44,6 +44,7 @@ jobs:
 
       - name: Test and build user repo project
         run: mvn -f pom.xml clean install
+        working-directory: ./main
 
       - uses: actions/checkout@v1
 
