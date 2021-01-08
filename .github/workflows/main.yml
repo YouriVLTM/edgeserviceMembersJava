@@ -3,14 +3,7 @@ name: Test, Build and Upload microsService
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-      tags:
-        description: 'Test scenario tags'
+
 jobs:
   compile:
     runs-on: ubuntu-latest
@@ -36,28 +29,6 @@ jobs:
     needs: compile
     name: Java 8 build, deliver artifact and container
     steps:
-      - name: checkout user repo
-        uses: actions/checkout@v2
-        with:
-          repository: vranckxrobin/users-service
-          path: main 
-     
-      - name: Set up JDK 8 for user service
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-
-      - name: Setup PostgreSQL
-        uses: huaxk/postgis-action@v1
-        with:
-          postgresql password: "postgres"
-          postgresql user: "postgres"
-          postgresql db: 'advanced_programing_project_user_DB'
-          
-      - name: Test and build user repo project
-        run: mvn -f pom.xml clean install
-        working-directory: ./main
-
       - uses: actions/checkout@v1
 
       - name: Set up JDK 8
