@@ -10,12 +10,6 @@ jobs:
     strategy:
       matrix:
         java: [ 8 ]
-    
-    services:
-      user: 
-        image: r0703028/users-ex
-        ports: 
-          - 8051:8051
 
     name: Java ${{ matrix.java }} compile
     steps:
