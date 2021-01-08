@@ -41,7 +41,19 @@ jobs:
         With:
           repository: vranckxrobin/users-service
           path: main 
+     
+      - name: Set up JDK 8 for user service
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
 
+      - name: Setup PostgreSQL
+        uses: huaxk/postgis-action@v1
+        with:
+          postgresql password: "postgres"
+          postgresql user: "postgres"
+          postgresql db: 'advanced_programing_project_user_DB'
+          
       - name: Test and build user repo project
         run: mvn -f pom.xml clean install
         working-directory: ./main
