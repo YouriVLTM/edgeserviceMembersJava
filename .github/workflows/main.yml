@@ -3,7 +3,14 @@ name: Test, Build and Upload microsService
 on:
   push:
     branches: [ main ]
-
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+      tags:
+        description: 'Test scenario tags'
 jobs:
   compile:
     runs-on: ubuntu-latest
@@ -29,6 +36,14 @@ jobs:
     needs: compile
     name: Java 8 build, deliver artifact and container
     steps:
+      - name: checkout user repo
+        uses: actions/checkout@v1
+        with:
+          repository: vranckxrobin/users-service
+
+      - name: Test and build user repo project
+        run: mvn -f pom.xml clean install
+
       - uses: actions/checkout@v1
 
       - name: Set up JDK 8
