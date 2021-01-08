@@ -37,7 +37,7 @@ jobs:
     name: Java 8 build, deliver artifact and container
     steps:
       - name: checkout user repo
-        uses: actions/checkout@v1
+        uses: actions/checkout@@v2
         with:
           repository: vranckxrobin/users-service
           path: main 
