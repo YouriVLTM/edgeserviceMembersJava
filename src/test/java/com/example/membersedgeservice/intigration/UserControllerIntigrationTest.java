@@ -68,22 +68,22 @@ public class UserControllerIntigrationTest {
 
         );
         private ObjectMapper mapper = new ObjectMapper();
-        @BeforeEach
-        public void beforeAllTests() {
-            ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test") ;
-            ImgBoardUser user1 = new ImgBoardUser("testF","testL","test@hotmail.com","test");
-
-            try{
-                ResponseEntity response = restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user.getEmail(), HttpMethod.DELETE,null,
-                        String.class);
-            } catch (Exception e) {
-            }
-            try{
-
-            ResponseEntity response2 =restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user1.getEmail(), HttpMethod.DELETE,null,
-                    String.class);
-            } catch (Exception e) {
-            }
+//        @BeforeEach
+//        public void beforeAllTests() {
+//            ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test") ;
+//            ImgBoardUser user1 = new ImgBoardUser("testF","testL","test@hotmail.com","test");
+//
+//            try{
+//                ResponseEntity response = restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user.getEmail(), HttpMethod.DELETE,null,
+//                        String.class);
+//            } catch (Exception e) {
+//            }
+//            try{
+//
+//            ResponseEntity response2 =restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user1.getEmail(), HttpMethod.DELETE,null,
+//                    String.class);
+//            } catch (Exception e) {
+//            }
 //            try{
 //                restTemplate.delete("http://" + imageServiceBaseurl + "/images/" + image1.getKey());
 //
@@ -94,32 +94,32 @@ public class UserControllerIntigrationTest {
 //
 //            } catch (Exception e) {
 //            }
-            try{
-            user =restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
-                    user,ImgBoardUser.class);
-            } catch (Exception e) {
-            }
-            try{
-            user1 =restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
-                    user1,ImgBoardUser.class);
-            } catch (Exception e) {
-            }
-
-        }
-        @AfterEach
-        public void afterAllTests() {
-            //Watch out with deleteAll() methods when you have other data in the test database!
-            ImgBoardUser user2 = new ImgBoardUser(
-                    "testF2",
-                    "testL2",
-                    "test2@hotmail.com",
-                    "test2"
-            );
-            try{
-                ResponseEntity response = restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user2.getEmail(), HttpMethod.DELETE,null,
-                        String.class);
-            }catch(Exception e){
-            }
+//            try{
+//            user =restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
+//                    user,ImgBoardUser.class);
+//            } catch (Exception e) {
+//            }
+//            try{
+//            user1 =restTemplate.postForObject("http://" + userServiceBaseUrl + "/user",
+//                    user1,ImgBoardUser.class);
+//            } catch (Exception e) {
+//            }
+//
+//        }
+//        @AfterEach
+//        public void afterAllTests() {
+//            //Watch out with deleteAll() methods when you have other data in the test database!
+//            ImgBoardUser user2 = new ImgBoardUser(
+//                    "testF2",
+//                    "testL2",
+//                    "test2@hotmail.com",
+//                    "test2"
+//            );
+//            try{
+//                ResponseEntity response = restTemplate.exchange("http://" + userServiceBaseUrl + "/user/"+user2.getEmail(), HttpMethod.DELETE,null,
+//                        String.class);
+//            }catch(Exception e){
+//            }
 //            try{
 //                restTemplate.delete("http://" + imageServiceBaseurl + "/images/" + image1.getKey());
 //                       }catch(Exception e){
@@ -132,7 +132,7 @@ public class UserControllerIntigrationTest {
 //                restTemplate.delete("http://" + commentServiceBaseUrl + "/comments/" + comment1.getKey());
 //            }catch(Exception e){
 //            }
-        }
+//        }
 
         @Test
         public void whenRegister_thenReturnUser() throws Exception {
