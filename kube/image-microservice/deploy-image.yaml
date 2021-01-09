@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: image-service-secret
+type: Opaque
+data:
+  MARIADB_HOST: aW1hZ2Utc2VydmljZS1tYXJpYWRi
+  MARIADB_PORT: MzMwNg==
+  DB_PASSWORD: dGVzdA==
+  SERVER_PORT: ODA1Mg==
+  MARIADB_NAME: aW1hZ2VzZGI=
+  MYSQL_ROOT_PASSWORD: dGVzdA==
+---
 apiVersion: v1                    # API version
 kind: Service                     # Type of kubernetes resource
 metadata:
@@ -39,11 +52,20 @@ spec:
               name: mariadb
           env:                    # Environment variables supplied to the Pod
             - name: MYSQL_DATABASE
-              value: "imagesdb"
+                valueFrom:
+                  secretKeyRef:
+                    name: image-service-secret
+                    key: MARIADB_NAME
             - name: MYSQL_ROOT_PASSWORD
-              value: "test"
+                valueFrom:
+                  secretKeyRef:
+                    name: image-service-secret
+                    key: MYSQL_ROOT_PASSWORD
             - name: MARIADB_DATABASE
-              value: "imagesdb"
+                valueFrom:
+                  secretKeyRef:
+                    name: image-service-secret
+                    key: MARIADB_NAME
 ---
 apiVersion: v1                   # API version
 kind: Service                    # Type of the kubernetes resource
@@ -90,12 +112,27 @@ spec:
               memory: "400Mi"
           env:                    # Environment variables supplied to the Pod
             - name: MARIADB_HOST
-              value: "image-service-mariadb"
+                valueFrom:
+                  secretKeyRef:
+                    name: image-service-secret
+                    key: MARIADB_HOST
             - name: MARIADB_PORT
-              value: "3306"
+                valueFrom:
+                  secretKeyRef:
+                    name: image-service-secret
+                    key: MARIADB_PORT
             - name: DB_PASSWORD
-              value: "test"
+                valueFrom:
+                  secretKeyRef:
+                    name: image-service-secret
+                    key: DB_PASSWORD
             - name: SERVER_PORT
-              value: "8052"
+                valueFrom:
+                  secretKeyRef:
+                    name: image-service-secret
+                    key: SERVER_PORT
             - name: MARIADB_NAME
-              value: "imagesdb"
+                valueFrom:
+                  secretKeyRef:
+                    name: image-service-secret
+                    key: MARIADB_NAME
