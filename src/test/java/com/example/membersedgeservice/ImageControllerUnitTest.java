@@ -170,24 +170,6 @@ public class ImageControllerUnitTest {
                         .body(mapper.writeValueAsString(newImage1))
                 );
 
-       /* //TODO get images
-        mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(newComment1))
-                );
-
-
-        //TODO get users
-        mockServer.expect(ExpectedCount.once(),
-                requestTo(new URI("http://" + commentServiceBaseUrl + "/comments")))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(newComment1))
-                );*/
 
         mockMvc.perform(post("/images").header("Authorization", "Bearer " + token)
                 .param("source", newImage1.getSource())
